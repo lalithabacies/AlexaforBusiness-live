@@ -1,0 +1,25 @@
+.retrieve_stats_form{padding:20px 0}.qsm_filter_options{background-color:#fff;padding:10px}.qsm_filter_options label{min-width:275px;display:inline-block}.qsm_results_overview_section{display:flex;flex-direction:column;justify-content:space-around}.qsm_stats_container{margin:10px 0;padding:10px;border:2px solid #ddd;background-color:#fff;flex-grow:1}.qsm_stats_container_title{width:100%;display:block;text-align:center;font-size:22px;margin:5% 0;line-height:.9}.qsm_stats_container_content{width:100%;display:block;text-align:center;font-size:32px;text-shadow:2px 2px 4px #444;margin:5% 0;line-height:.9}.qsm_answer_data_section{display:flex;flex-direction:column;justify-content:space-around}.qsm_stats_answers{flex-grow:initial}.legend{text-align:center}.legend .color-sample{width:10px;height:10px;display:inline-block}.qsm_answer_canvas{display:block;margin:0 auto}.qsm_chart_selectors{display:flex;flex-direction:column}.qsm_score_canvas_title{width:100%;display:block;text-align:center;font-size:22px;margin:5% 0;line-height:.9}.qsm_score_canvas_content{width:100%;display:block;text-align:center;font-size:32px;text-shadow:2px 2px 4px #444;margin:5% 0;line-height:.9}.qsm_individual_canvas_title{width:100%;display:block;text-align:center;font-size:22px;margin:5% 0;line-height:.9}.qsm_individual_canvas_content{width:100%;display:block;text-align:center;font-size:20px;margin:5% 0;line-height:.9;max-height:400px;overflow-x:scroll}.qsm_individual_canvas_content p{font-size:20px}.chart_title{width:100%;display:block;text-align:center;font-size:22px;margin:5% 0;line-height:.9}@media (min-width:600px){.qsm_results_overview_section{flex-direction:row}.qsm_answer_data_section{flex-direction:row;flex-wrap:wrap}.qsm_stats_answers{width:45%}.qsm_stats_container_content{font-size:60px;text-shadow:3px 3px 3px #444}.qsm_score_canvas_content{font-size:60px;text-shadow:3px 3px 3px #444}}@media (min-width:900px){.qsm_chart_selectors{display:flex;flex-direction:row;justify-content:center;flex-wrap:wrap}}
+
+.qsm_chart_selectors button {
+  margin: 5px;
+}
+.qsm_stats_container {
+  border-radius: 15px !important;
+  padding: 0px !important;
+  margin: 10px 10px !important;
+}
+.qsm_stats_container_title {
+  border-top-left-radius: 13px;
+  margin: 0px !important;
+  background-color: #7DD8D2;
+  padding: 15px;
+  color: #fff;
+  border-top-right-radius: 13px;
+}
+.qsm_stats_container_content {
+  margin: 10% 0 !important;
+  text-shadow: 2px 2px 2px #444 !important;
+}
+.qsm_chart_selectors {
+  margin: 20px 0px;
+}

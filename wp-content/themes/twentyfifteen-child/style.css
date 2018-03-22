@@ -1,0 +1,254 @@
+/*
+ Theme Name:   Twenty Fifteen Child
+ Theme URI:    http://example.com/twenty-fifteen-child/
+ Description:  Twenty Fifteen Child Theme
+ Author:       John Doe
+ Author URI:   http://example.com
+ Template:     twentyfifteen
+ Version:      1.0.0
+ License:      GNU General Public License v2 or later
+ License URI:  http://www.gnu.org/licenses/gpl-2.0.html
+ Tags:         light, dark, two-columns, right-sidebar, responsive-layout, accessibility-ready
+ Text Domain:  twenty-fifteen-child
+ */
+
+ .main-navigation li {
+ 	border-top: 1px solid !important;
+ 	border-right: 1px solid !important;
+ 	border-left: 1px solid !important;
+ }
+ .main-navigation li a {
+ 	padding: 15px;
+ 	font-size: 14px;
+ }
+ .main-navigation li:last-child {
+ 	border-bottom: 1px solid !important;
+ }
+ .dropdown-toggle:focus {
+ 	outline: none;
+ }
+ .main-navigation ul ul {
+ 	margin-left: 0;
+ }
+ .main-navigation ul ul li {
+ 	border-right: 0px !important;
+ 	border-left: 0px !important;
+ }
+ .main-navigation ul ul li:last-child {
+ 	border-bottom: 0px !important;
+ }
+ .dropdown-toggle {
+ 	padding: 10px 0px;
+ 	width: 100%;
+ 	top: 0px;
+ 	background: transparent;
+ }
+ .dropdown-toggle:after {
+ 	position: relative;
+ 	left: 90px;
+ }
+ #deleterooms {
+ 	font-size: 12px;
+ 	background: #E6E6E6;
+ 	color: black;
+ 	border: 1px solid;
+ 	border-radius: 6px;
+ 	padding: 10px;
+ }
+ #createroom {
+ 	background: none;
+ 	border-bottom: 0;
+ }
+ #createroom  input[type="button"] {
+ 	font-size: 12px;
+ 	background: #E6E6E6;
+ 	color: black;
+ 	border: 1px solid;
+ 	border-radius: 6px;
+ 	padding: 10px;
+ }
+ form th, form td{
+ 	text-align: center;
+ 	border: 1px solid;
+ 	font-size: 14px;
+ }
+ form table {
+ 	border-collapse: collapse;
+ 	margin: 35px 0px;
+ }
+ form table input:focus {
+ 	outline: none;
+ }
+ article {
+ 	margin: 0px !important;
+ }
+ .create_room, .create_user {
+ 	font-size: 14px;
+ }
+ form.create_room>div, .create_user>div {
+ 	display: -webkit-box;
+ 	margin: 20px 0px
+ }
+ .roomname label, .roomprofile label, .roomdevices label {
+ 	display: block;
+ 	width: 180px;
+ 	margin: 20px 0px;
+ }
+ .roomname input, .roomprofile select, .roomdevices select, .uhotelname input, .uusername input {
+ 	border: 1px solid;
+ 	width: 300px !important;
+ 	font-size: 14px;
+ 	margin: 10px 0px;
+ 	height: 40px;
+ }
+ input.createroomsubmit, .createusersubmit {
+ 	background: none !important;
+ 	color: black !important;
+ 	border: 1px solid !important;
+ 	font-size: 14px!important;
+ 	border-radius: 6px;
+ }
+ input.createroomsubmit:hover, .createusersubmit:hover {
+ 	background: none !important;
+ }
+ .uhotelname label, .uusername label  {
+ 	display: block !important;
+ 	width: 180px !important;
+ 	margin: 20px 0px !important;
+ }
+ .alluser table tbody tr {
+ 	border: 0px;
+ }
+ .alluser table tbody tr:first-child th {
+ 	border: 0px;
+ }
+ .delete_users {
+ 	float: left;
+ 	font-size: 12px !important;
+ 	background: #E6E6E6 !important;
+ 	color: black !important;
+ 	border: 1px solid !important;
+ 	border-radius: 6px;
+ 	padding: 10px !important;
+ 	margin-bottom: 20px;
+ }
+ form.create_room_profile {
+ 	font-size: 14px;
+ }
+ form.create_room_profile select {
+ 	font-size: 14px;
+ }
+ .create_room_profile>div {
+ 	display: -webkit-box;
+ }
+ .create_room_profile>div>label, .create_request>div>label{
+ 	display: block !important;
+ 	width: 180px !important;
+ 	margin: 20px 0px !important;
+ }
+ .create_room_profile>div>input, .create_room_profile>div>select, .create_request>div>input, .create_request>div>select {
+ 	border: 1px solid;
+ 	width: 300px !important;
+ 	font-size: 14px;
+ 	margin: 10px 0px;
+ 	height: 40px;
+ }
+ .create_room_profile_submit, .delete_room_profile_button {
+ 	font-size: 12px !important;
+ 	background: #E6E6E6 !important;
+ 	color: black !important;
+ 	border: 1px solid !important;
+ 	border-radius: 6px;
+ 	padding: 10px !important;
+ 	margin-top: 20px;
+ }
+ input#add_room {
+ 	font-size: 12px !important;
+ 	background: #E6E6E6 !important;
+ 	color: black !important;
+ 	border: 1px solid !important;
+ 	border-radius: 6px;
+ 	padding: 10px !important;
+ 	opacity: 1;
+ }
+ select#actions {
+ 	border: 1px solid;
+ 	border-radius: 6px;
+ 	width: 300px !important;
+ 	font-size: 14px;
+ 	padding: 10px;
+ 	margin: 0px 0px 0px 30px;
+ 	height: 40px;
+ 	opacity: 1;
+ }
+ .create_request {
+ 	font-size: 14px;
+ }
+ .create_request>div>select {
+ 	font-size: 14px;
+ }
+ .create_request>div {
+ 	display: flex;
+ }
+ .create_request>div>textarea {
+ 	border: 1px solid;
+ 	width: 300px !important;
+ 	font-size: 14px;
+ 	padding: 10px;
+ 	margin: 10px 0px;
+ 	height: 100px;
+ }
+ .notification {
+ 	/*display: block !important;*/
+ }
+ #can, #sub {
+ 	font-size: 12px !important;
+ 	background: #E6E6E6 !important;
+ 	color: black !important;
+ 	border: 1px solid !important;
+ 	border-radius: 6px;
+ 	padding: 10px !important;
+ 	margin-top: 20px;
+ }
+ #sub {
+ 	margin-left: 30px;
+ }
+ .notification>table {
+ 	border-collapse: collapse;
+ 	width: 300px !important;
+ 	font-size: 14px;
+ 	padding: 0px;
+ 	margin: 10px 0px;
+ }
+ .notification>table>tbody>tr>td:first-child {
+ 	width: 10%;
+ 	padding: 0px !important
+ }
+ .notification>table>tbody>tr>td:nth-child(2) {
+ 	width: 25%;
+ 	padding: 0px !important
+ }
+ .notification>table>tbody>tr>td:nth-child(3) {
+ 	width: 65%;
+ 	padding: 0px !important
+ }
+ .edit_rooms {
+    border-bottom: 0 !important;
+}
+ input#add_request {
+    width: initial !important;;
+    background: #E6E6E6 !important;
+    color: black !important;
+    border: 1px solid !important;
+    border-radius: 6px;
+    padding: 10px !important;
+    margin-left: 30px;
+ }
+ #request_can {
+     font-size: 14px !important;
+     background: #E6E6E6 !important;
+    color: black !important;
+    border: 1px solid !important;
+    border-radius: 6px;
+    padding: 10px !important;
+ }

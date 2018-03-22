@@ -1,0 +1,179 @@
+// out: qsm-analysis-admin.css, compress: true
+
+/***************
+Top Section
+****************/
+
+.retrieve_stats_form {
+  padding: 20px 0;
+}
+
+/***************
+Filter Section
+****************/
+
+.qsm_filter_options {
+  background-color: #fff;
+  padding: 10px;
+
+  & label {
+    min-width: 275px;
+    display: inline-block;
+  }
+}
+
+/***************
+Results Overview Section
+****************/
+.qsm_results_overview_section {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.qsm_stats_container {
+  margin: 10px 0;
+  padding: 10px;
+  border: 2px solid #ddd;
+  background-color: #fff;
+  flex-grow: 1;
+
+  &_title {
+    .chart_title;
+  }
+
+  &_content {
+    width: 100%;
+    display: block;
+    text-align: center;
+    font-size: 32px;
+    text-shadow: 2px 2px 4px #444;
+    margin: 5% 0;
+    line-height: 0.9;
+  }
+}
+
+/***************
+Chart Section
+****************/
+
+.qsm_answer_data_section {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.qsm_stats_answers {
+  flex-grow: initial;
+}
+
+.legend {
+  text-align: center;
+
+  & .color-sample {
+    width: 10px;
+    height: 10px;
+    display: inline-block;
+  }
+}
+
+.qsm_answer_canvas {
+  display: block;
+  margin: 0 auto;
+}
+
+.qsm_chart_selectors {
+  display: flex;
+  flex-direction: column;
+}
+
+.qsm_score_canvas {
+
+  &_title {
+    .chart_title;
+  }
+
+  &_content {
+    width: 100%;
+    display: block;
+    text-align: center;
+    font-size: 32px;
+    text-shadow: 2px 2px 4px #444;
+    margin: 5% 0;
+    line-height: .9;
+  }
+}
+
+.qsm_individual_canvas {
+
+  &_title {
+    .chart_title;
+  }
+
+  &_content {
+    width: 100%;
+    display: block;
+    text-align: center;
+    font-size: 20px;
+    margin: 5% 0;
+    line-height: .9;
+    max-height: 400px;
+    overflow-x: scroll;
+
+    p {
+      font-size: 20px;
+    }
+  }
+
+}
+
+/***************
+Misc.
+****************/
+
+.chart_title {
+  width: 100%;
+  display: block;
+  text-align: center;
+  font-size: 22px;
+  margin: 5% 0;
+  line-height: .9;
+}
+
+@media (min-width: 600px) {
+  .qsm_results_overview_section {
+    flex-direction: row;
+  }
+
+  .qsm_answer_data_section {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .qsm_stats_answers {
+    width: 45%;
+  }
+
+  .qsm_stats_container {
+
+    &_content {
+      font-size: 60px;
+      text-shadow: 3px 3px 3px #444;
+    }
+  }
+
+  .qsm_score_canvas_content {
+    font-size: 60px;
+    text-shadow: 3px 3px 3px #444;
+  }
+
+}
+
+@media (min-width: 900px) {
+  .qsm_chart_selectors {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}

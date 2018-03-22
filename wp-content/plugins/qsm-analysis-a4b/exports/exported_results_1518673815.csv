@@ -1,0 +1,3 @@
+"Time Submitted","User ID",Name,"Phone Number",Business,Email,Quiz/Survey,"Total Correct","Total Questions",Score,"Question 1","Question 1 Answer Provided","Question 1 Comment Provided","Question 1 Right or Wrong","Question 1 Points Earned","Question 1 Category","Comments Provided",Timer
+"2018-02-15 05:47:38",1,None,None,None,None,Test1,0,1,0,"True or False:1+1=2?",False,,incorrect,0,,,"5 seconds"
+"2018-02-15 05:47:52",1,None,None,None,None,Test1,1,1,100,"True or False:1+1=2?",True,,correct,0,,,"2 seconds"
