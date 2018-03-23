@@ -186,15 +186,24 @@ function create_room(){
         $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_rooms',json_encode(array('RoomName'=>$_REQUEST['RoomName']))));
         
         $purpose        = "update";
-        $readonly       = "readonly";
+        //$readonly       = "readonly";
         $RoomName    = $data[0]->RoomName;
         $ProfileName = $data[0]->ProfileName;
         $DeviceName  = $data[0]->DeviceName;
     }
+    $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_rooms',json_encode(array())));
+    $associated_device = array();
+    if($data){
+        foreach($data as $room){
+            if($room->DeviceName){
+            $associated_device[]=$room->DeviceName;
+            }
+        }
+    }
     echo '<div class="col-md-offset-3 col-md-6 card card-tiles style-default-light"><form class="form create_room form-validate" action="'.admin_url('admin-post.php').'" method="POST">
 
     <div class="form-group floating-label roomname">
-    <input class="form-control" type="textbox" name="RoomName" id="RoomName" value="'.$RoomName.'" required '.$readonly.' style="width:200px;">
+    <input class="form-control" type="textbox" name="RoomName" id="RoomName" value="'.$RoomName.'" required style="width:200px;"><input type="hidden" name="OldRoomName" id="OldRoomName" value="'.$RoomName.'">
     <label for="RoomName">Room Name *</label>
     </div>
 
@@ -215,20 +224,22 @@ function create_room(){
     echo'<label for="ProfileArn">Room Profile *</label></div>';
     echo '<div class="form-group roomdevices">';
     /*echo '<select class="form-control select2-list js-example-basic-multiple" name="DeviceName[]" id="DeviceName" data-placeholder="Select an item" tabindex="-1"  multiple="multiple" required>';*/
-    echo '<select class="form-control" name="DeviceName" id="DeviceName" data-placeholder="Select an item" tabindex="-1" required>';
+    echo '<select class="form-control" name="DeviceName" id="DeviceName" data-placeholder="Select an item" tabindex="-1">';
     $params = ($DeviceName)?json_encode(array('DeviceName'=>$DeviceName)):json_encode(array());
     $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_devices',$params));
     $options='';
     if(!empty($data)){
         foreach($data as $device_name){
+            
             if(trim($device_name->DeviceName)){
                 $_selected = (trim($DeviceName)==trim($device_name->DeviceName))?"selected":"";
-                $options.='<option>Select Device</option><option value="'.$device_name->DeviceName.'" '.$_selected.'>'.$device_name->DeviceName.'</option>';
+                $_disabled =in_array(trim($device_name->DeviceName),$associated_device)?($_selected=="selected"?"":"disabled"):"";
+                $options.='<option value="">Select Device</option><option value="'.$device_name->DeviceName.'" '.$_selected.' '.$_disabled.'>'.$device_name->DeviceName.'</option>';
             }
         }
     }
     echo $options;
-    echo '</select><label for="ProfileArn">Devices </label></div>';
+    echo '</select><input type="hidden" name="OldDeviceName" id="OldDeviceName" values="'.$DeviceName.'"><label for="ProfileArn">Devices </label></div>';
     
     echo'<input type="hidden" name="action" value="create_room">
     <input type="hidden" name="purpose" value="'.$purpose.'">
@@ -245,18 +256,21 @@ function create_room(){
 
 add_shortcode('list_rooms','list_rooms');
 function list_rooms(){
+    if($_REQUEST['success']){
+        echo '<div class="alert alert-callout alert-success col-md-offset-3 col-md-6">Device has been disassociated successfully.</div>';
+    }
     $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_rooms',json_encode(array())));
     //print_r($data);
     //Form to display and delete the room name
     $content='<div class="col-md-offset-1 col-md-10 card card-tiles style-default-light"><form class="form" name="delete_rooms" action="'.admin_url('admin-post.php').'" method="POST">';
-    $content.='<input class="btn btn-raised btn-primary delete_action" type="button" name="deleterooms" id="deleterooms" value="Delete Rooms"> <a href="'.get_home_url().'/create_room/'.'" name="createroom" id="createroom"><input class="btn btn-raised btn-primary" type="button" value="Create Room"></a>';
+    $content.='<input class="btn btn-raised btn-primary delete_action_rooms" type="button" name="deleterooms" id="deleterooms" value="Delete Rooms"> <a href="'.get_home_url().'/create_room/'.'" name="createroom" id="createroom"><input class="btn btn-raised btn-primary" type="button" value="Create Room"></a>';
     $content.='<table class="table no-margin"><tr><th><div class="checkbox checkbox-inline checkbox-styled">
-                   <label><input type="checkbox" name="chkall" id="chkall"></label></div></th><th>Room Name</th><th>Room Type</th><th>Device Name</th><th>Edit</th></tr>';
+                   <label><input type="checkbox" name="chkall" id="chkall"></label></div></th><th>Room Name</th><th>Room Type</th><th>Device Name</th><th style="text-align:center;">Remove Device</th><th>Edit</th></tr>';
     
     $i=0;  
     if(!empty($data)){
         foreach($data as $room){
-            $content.='<tr><td><div class="checkbox checkbox-inline checkbox-styled"><label><input type="checkbox" name="chk_room'.$i.'" class="chkall"></label></div><input type="hidden" name="room_name'.$i.'" value="'.$room->RoomName.'"></td><td>'.$room->RoomName.'</td><td>'.$room->ProfileName.'</td><td>'.$room->DeviceName.'</td><td><a href="'.get_home_url().'/create_room?RoomName='.$room->RoomName.'" name="edit_room'.$i.'" id="edit_room'.$i.'" class="edit_rooms" data-room_name="'.$room->RoomName.'" data-room_profile_name="'.$room->ProfileName.'">Edit</a></td></tr>';
+            $content.='<tr><td><div class="checkbox checkbox-inline checkbox-styled"><label><input type="checkbox" name="chk_room'.$i.'" class="chkall"></label></div><input type="hidden" name="room_name'.$i.'" value="'.$room->RoomName.'"></td><td>'.$room->RoomName.'</td><td>'.$room->ProfileName.'</td><td>'.$room->DeviceName.'</td><td style="text-align:center;"><!--<input type="button" class="btn btn-raised btn-primary removed_device" data-devicename="'.$room->DeviceName.'" data-url="'.home_url().'/list-out-rooms/" name="remove_device" id="remove_device" value="Remove Device">--><i class="fa fa-remove fa-2x" data-devicename="'.$room->DeviceName.'" data-url="'.home_url().'/list-out-rooms/" name="remove_device" id="remove_device"></i></td><td><a href="'.get_home_url().'/create_room?RoomName='.$room->RoomName.'" name="edit_room'.$i.'" id="edit_room'.$i.'" class="edit_rooms" data-room_name="'.$room->RoomName.'" data-room_profile_name="'.$room->ProfileName.'">Edit</a></td></tr>';
             $i++;
         }
     }
@@ -264,6 +278,7 @@ function list_rooms(){
     $content.='<tr></tr></table>';
     $content.='<input type="hidden" name="action" value="delete_rooms"><input type="hidden" name="no_of_rooms" value="'.$i.'"></form></div>';
     
+    $content.='<form class="form" name="dissync_devices" action="'.admin_url('admin-post.php').'" method="POST"><input type="hidden" name="action" value="dissync_devices"><input type="hidden" name="disync_device_name" id="disync_device_name" value=""></form>';
     //Form to update the room name
     /*$content.='<form name="update_room" action="'.admin_url('admin-post.php').'" method="POST"><input type="hidden" name="edited_room_name" id="edited_room_name" value=""><input type="hidden" name="edited_room_profile_name" id="edited_room_profile_name" value=""><input type="hidden" name="action" value="update_room"><input type="hidden" name="purpose" value="update"></form>';*/
     return $content;
@@ -273,6 +288,13 @@ function list_rooms(){
  * Shortcode for list out the Rooms Profile List
  * 
  */
+
+add_action('admin_post_dissync_devices','dissync_devices');
+function dissync_devices(){
+    $result=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/disassociate_device_from_room',json_encode(array('DeviceName'=>$_POST["disync_device_name"]))));
+    wp_redirect(home_url().'/list-out-rooms?success=1');
+    
+}
 
 add_shortcode('list_room_profile','display_room_profile');
 function display_room_profile(){
@@ -395,7 +417,9 @@ function create_room_profile(){
         echo '<div class="alert alert-callout alert-danger col-md-offset-3 col-md-6">'.$_REQUEST['error'].'</div>';
     }
     $ProfileName = $Timezone = $Address = $ClientRequestToken = $MaxVolumeLimit = $readonly = '';
-    $action_room_profile= "create_room_profile";
+    $SetupModeDisabled   = true;
+    $PSTNEnabled         = true;
+    $action_room_profile = "create_room_profile";
     if(!empty($_REQUEST['rp_name'])){
         $room_profile_data = json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_room_profile_info',json_encode(array('ProfileName'=>$_REQUEST['rp_name']))));
 
@@ -407,9 +431,9 @@ function create_room_profile(){
         $TemperatureUnit    = $room_profile_data->TemperatureUnit;
         $WakeWord           = $room_profile_data->WakeWord;
         //$ClientRequestToken = $room_profile_data->ClientRequestToken;
-        $SetupModeDisabled  = $room_profile_data->SetupModeDisabled;
+        //$SetupModeDisabled  = $room_profile_data->SetupModeDisabled;
         $MaxVolumeLimit     = $room_profile_data->MaxVolumeLimit;
-        $PSTNEnabled        = $room_profile_data->PSTNEnabled;
+        //$PSTNEnabled        = $room_profile_data->PSTNEnabled;
         //$readonly           = "readonly";
         $action_room_profile= "update_room_profile";
     }
@@ -437,7 +461,7 @@ function create_room_profile(){
     <label for="Timezone">Timezone</label></div>
 
     <div class="form-group floating-label addres">
-    <input class="form-control" type="textbox" name="Address" id="Address" value="'.$Address.'" required><label for="Address">Address *</label></div>  <!-- value="10210 FM-1021, Eagle Pass, KA, IN, 570036" -->';
+    <input class="form-control" type="textbox" name="Address" id="Address" value="'.$Address.'" required><label for="Address">Address * (Format: 123 Sample Street, Seattle, WA 98101)</label></div>  <!-- value="10210 FM-1021, Eagle Pass, KA, IN, 570036" -->';
 
     $distance_unit_list=array('METRIC','IMPERIAL');
     echo'<div class="form-group floating-label distanceunit">
@@ -535,8 +559,18 @@ function create_room_profile_api(){
 
 add_action('admin_post_update_room_profile','update_room_profile_api');
 function update_room_profile_api(){
-    doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/update_room_profile',json_encode($_POST));
-    wp_redirect(get_home_url().'/list-out-room-profile/');
+    $result = json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/update_room_profile',json_encode($_POST)));
+    
+    if($result->error){
+        if (strpos($result->error, ':') !== false) {
+            $error = urlencode(explode(':',$result->error)[1]);
+        }else{
+            $error = urlencode($result->error);
+        }
+        wp_redirect(get_home_url().'/create-room-profile/?rp_name='.$_POST["OldProfileName"].'&error='.$error);
+    }else{
+        wp_redirect(get_home_url().'/list-out-room-profile/');
+    }
 }
 
 

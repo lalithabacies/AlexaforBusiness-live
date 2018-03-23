@@ -210,6 +210,20 @@ $('.delete_action').on('click',function(){
     }
 });
 
+$('.delete_action_rooms').on('click',function(){
+    chk_length = $('.chkall:checked').length;
+    if(chk_length==0){
+        alert('Please Select Atleast One Record');
+        return false;
+    }else{
+        var conf = confirm('Are you sure want to delete?');
+        if(conf == true){
+            $('form[name=delete_rooms]').submit();
+        }
+    }
+});
+
+
 
 $('.delete_rp_action').on('click',function(){
     chk_length = $('.chkall:checked').length;
@@ -221,6 +235,21 @@ $('.delete_rp_action').on('click',function(){
         if(conf == true){
             $('form[name=list_room_profile]').submit();
         }
+    }
+});
+
+
+$(document).on('click','#remove_device',function(){
+    device_name = $(this).data('devicename');
+    if(device_name){
+        conf = confirm("Are you sure want to disassociate the Device?");
+        if(conf == true){
+            $('#disync_device_name').val(device_name);
+            $('form[name=dissync_devices]').submit();
+        }
+    }else{
+        alert('This Room is not syncronized with any Devices');
+        return false;
     }
 });
 
