@@ -203,9 +203,23 @@ $('.delete_action').on('click',function(){
         alert('Please Select Atleast One Record');
         return false;
     }else{
-        var conf = confirm('Are you sure want to delete the selected users');
+        var conf = confirm('Are you sure want to delete?');
         if(conf == true){
             $('form').submit();
+        }
+    }
+});
+
+
+$('.delete_rp_action').on('click',function(){
+    chk_length = $('.chkall:checked').length;
+    if(chk_length==0){
+        alert('Please Select Atleast One Record');
+        return false;
+    }else{
+        var conf = confirm('Are you sure want to delete?');
+        if(conf == true){
+            $('form[name=list_room_profile]').submit();
         }
     }
 });
