@@ -239,7 +239,7 @@ function create_room(){
         }
     }
     echo $options;
-    echo '</select><input type="hidden" name="OldDeviceName" id="OldDeviceName" values="'.$DeviceName.'"><label for="ProfileArn">Devices </label></div>';
+    echo '</select><input type="hidden" name="OldDeviceName" id="OldDeviceName" value="'.$DeviceName.'"><label for="ProfileArn">Devices </label></div>';
     
     echo'<input type="hidden" name="action" value="create_room">
     <input type="hidden" name="purpose" value="'.$purpose.'">
@@ -400,7 +400,7 @@ function create_room_api(){
         }else{
             $error = urlencode($result->error);
         }
-        wp_redirect(get_home_url().'/create_room/?error='.$error);
+        wp_redirect(get_home_url().'/create_room/?RoomName='.$_POST['OldRoomName'].'&error='.$error);
     }else{
         wp_redirect(get_home_url().'/list-out-rooms/');
     }
