@@ -165,12 +165,13 @@ $(document).ready(function(e) {
         }
         
         length = $('#password').val().length;
-        if(length==0){
+        /*if(length==0){
             $('#errorMessage_password').html('This field is required.');
             $('#errorMessage_password').show();
             return false;
             e.preventDefault();
-        }else if(length<=5){
+        }else */
+        if(length<=5 && length>0){
             $('#errorMessage_password').html('Password length should be atleast six characters');
             $('#errorMessage_password').show();
             return false;
@@ -180,14 +181,14 @@ $(document).ready(function(e) {
         }
         
         confirm_length = $('#confirm_password').val().length;
-        if(confirm_length==0){
+        /*if(confirm_length==0){
             $('#errorMessage_con_password').html('This field is required.');
             $('#errorMessage_con_password').show();
             return false;
             e.preventDefault();
         }else{
             $('#errorMessage').hide();
-        }
+        }*/
     
         if ($('#password').val() != $('#confirm_password').val()) {
             $("#errorMessage_con_password").html('Please enter the same password');

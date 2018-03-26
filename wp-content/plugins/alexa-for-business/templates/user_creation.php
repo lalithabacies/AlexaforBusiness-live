@@ -8,11 +8,13 @@ if($_REQUEST['userid']){
     $pwd_mandatory="";
     $action_for = "update";
     $title = "Update User";
+    $readonly = "readonly";
 }else{
     $button= 'Register';
     $pwd_mandatory="*";
     $action_for = "insert";
     $title = "Create User";
+    $readonly="";
 }
 ?>
 <section class="section-account">
@@ -30,7 +32,7 @@ if($_REQUEST['userid']){
              <label for="user_login">Username *</label>
          </div>-->
          <div class="form-group">
-             <input type="text" class="form-control" id="email" name="email" value="<?php echo $users->user_email?>" >
+             <input type="text" class="form-control" id="email" name="email" value="<?php echo $users->user_email?>" <?php echo $readonly; ?>>
              <span id="errorMessage" >Please enter a valid email address</span>
              <label style="height: 50px;" for="email">Email *</label>
          </div>
