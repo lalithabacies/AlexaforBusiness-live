@@ -64,7 +64,10 @@ $(document).on('click','.add_request',function(){
     /*if(choice===true){
         contents += '<div style="margin-left:'+count+'0px;" class="form-group floating-label guestrequest guestrequest'+count+'"><input class="form-control" type="textbox" name="guest_request'+count+'" id="guest_request'+count+'" value="" required><label for="guest_request'+count+'">Guest Request *</label></div><div style="margin-left:'+count+'0px;" class="form-group floating-label alexaresponse alexaresponse'+count+'"><textarea class="form-control" name="alexa_response'+count+'" id="alexa_response'+count+'" required ></textarea><label for="alexa_response'+count+'">Alexa Response *</label></div><div style="margin-left:'+count+'0px;" class="form-group floating-label alexaresponse alexaresponse'+count+'"></div>';
     }*/
-    contents += '<div style="margin-left:'+count+'0px;" class="form-group floating-label guestrequest guestrequest'+count+'"><input class="form-control" type="textbox" name="guest_request'+count+'" id="guest_request'+count+'" value="" required><label for="guest_request'+count+'">Guest Request *</label></div><div style="margin-left:'+count+'0px;" class="form-group floating-label alexaresponse alexaresponse'+count+'"><textarea class="form-control" name="alexa_response'+count+'" id="alexa_response'+count+'" required ></textarea><label for="alexa_response'+count+'">Alexa Response *</label></div><div style="margin-left:'+count+'0px;" class="form-group floating-label alexaresponse alexaresponse'+count+'"><input type="button" name="add_request'+count+'" id="add_request'+count+'" class="btn btn-block ink-reaction btn-info add_request" data-level="'+count+'" value="+"></div>';
+    contents += '<div style="margin-left:'+count+'0px;" class="form-group floating-label guestrequest guestrequest'+count+'"><input class="form-control get_dirty" type="textbox" name="guest_request'+count+'" id="guest_request'+count+'" value="" required><label for="guest_request'+count+'">Guest Request *</label></div><div style="margin-left:'+count+'0px;" class="form-group floating-label alexaresponse alexaresponse'+count+'"><textarea class="form-control get_dirty" name="alexa_response'+count+'" id="alexa_response'+count+'" required ></textarea><label for="alexa_response'+count+'">Alexa Response *</label></div><div style="margin-left:'+count+'0px;" class="form-group floating-label alexaresponse alexaresponse'+count+'">';
+    if(count<3){
+    contents += '<input type="button" name="add_request'+count+'" id="add_request'+count+'" class="btn btn-block ink-reaction btn-info add_request" data-level="'+count+'" value="+"></div>';
+    }
     
     $('.forlevel2').before(contents);
     
@@ -197,6 +200,16 @@ $(document).on('submit','form[name=request]',function(e){
     }
 });
 
+$('#RequestType').on('change',function(){
+    if($(this).val() == 'General Information'){
+        $('.notification').hide();
+        $('.notificationtemplate').hide();
+    }else{
+        $('.notification').show();
+        $('.notificationtemplate').show();
+    }
+});
+
 $('.delete_action').on('click',function(){
     chk_length = $('.chkall:checked').length;
     if(chk_length==0){
@@ -252,6 +265,48 @@ $(document).on('click','#remove_device',function(){
         return false;
     }
 });
+
+$('#noti_submit').on('click',function(){
+    var template = $('#template_name').val()
+    var temp_content = $('#tempcontent').val();
+    var count = 0;
+    
+    if(template==""){
+        $('#errorMessage_noti').html('This field is required');
+        $('#errorMessage_noti').show();
+        count++;
+    }else{
+        $('#errorMessage_noti').hide();
+    }
+
+    if(temp_content){
+        if(temp_content.indexOf('#roomno')>-1){
+            $('#errorMessage_noti_content').hide();
+            if(count == 0){
+                $('form').submit();
+            }
+        }else{
+            $('#errorMessage_noti_content').html('Template content should include the #roomno variable');
+            $('#errorMessage_noti_content').show();
+            count++;
+        }
+    }else{
+        $('#errorMessage_noti_content').html('This field is required');
+        $('#errorMessage_noti_content').show();
+        count++;
+    }
+    
+});
+
+
+ $(document).on('blur','.get_dirty',function(){
+        if ($(this).val().length > 0) {
+            $(this).addClass('dirty');
+        }
+ });
+ 
+ 
+
 
 });
 

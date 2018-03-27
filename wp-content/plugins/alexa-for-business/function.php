@@ -18,7 +18,7 @@ show_admin_bar(false);
 add_action('wp_enqueue_scripts','add_jquery_plugin');
 function add_jquery_plugin(){
     wp_enqueue_script( 'jquery','https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js');
-    wp_enqueue_script( 'jquery-1.12.4','https://code.jquery.com/jquery-1.12.4.js');
+    wp_enqueue_script( 'jquery-1.12.4','https://code.jquery.com/jquery-Notification1.12.4.js');
     wp_enqueue_script( 'jquery-1.12.1','https://code.jquery.com/ui/1.12.1/jquery-ui.js');
     
     wp_enqueue_style( 'css-ui', 'https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css');
@@ -32,6 +32,21 @@ function alexa_script() {
     wp_enqueue_script( 'a4b', plugins_url( '/js/a4b.js', __FILE__ ));
 }
 
+
+function get_username(){
+    $current_user = wp_get_current_user();
+    if($current_user->roles[0] == 'administrator'){
+        $iam_username = $current_user->user_email;
+    }else{
+        $args=array(
+        'meta_key'=>'user_belongs_to',
+        'meta_value'=>get_current_user_id()
+        );
+        $users = get_users($args);
+        $iam_username = $users->user_email;
+    }
+    return $iam_username;
+}
 
 /**
  * Shortcode for create the New User
@@ -183,7 +198,7 @@ function create_room(){
     if(!empty($_REQUEST['RoomName'])){
         //$RoomName       = $_REQUEST['room_value']['edited_room_name'];
         //$ProfileName    = $_REQUEST['room_value']['edited_room_profile_name'];
-        $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_rooms',json_encode(array('RoomName'=>$_REQUEST['RoomName'],'username'=>get_username()))));
+        $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_rooms',json_encode(array('RoomName'=>$_REQUEST['RoomName'],'username'=>get_username(),'userid'=>get_current_user_id()))));
         
         $purpose        = "update";
         //$readonly       = "readonly";
@@ -191,7 +206,7 @@ function create_room(){
         $ProfileName = $data[0]->ProfileName;
         $DeviceName  = $data[0]->DeviceName;
     }
-    $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_rooms',json_encode(array())));
+    $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_rooms',json_encode(array('username'=>get_username()))));
     $associated_device = array();
     if($data){
         foreach($data as $room){
@@ -245,6 +260,7 @@ function create_room(){
     echo'<input type="hidden" name="action" value="create_room">
     <input type="hidden" name="purpose" value="'.$purpose.'">
     <input type="hidden" name="username" id="username" value="'.get_username().'">
+    <input type="hidden" name="userid" id="userid" value="'.get_current_user_id().'">
     <input class="btn btn-raised btn-primary" type="Submit" value="submit"/>
     <input class="btn btn-raised btn-primary button_link" type="button" value="Cancel" data-link="'.get_home_url().'/list-out-rooms"/>
     </form></div>
@@ -294,7 +310,9 @@ function list_rooms(){
 add_action('admin_post_dissync_devices','dissync_devices');
 function dissync_devices(){
     $result=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/disassociate_device_from_room',json_encode(array('DeviceName'=>$_POST["disync_device_name"]))));
-    wp_redirect(home_url().'/list-out-rooms?success=1');
+    //wp_redirect(home_url().'/list-out-rooms?success=1');
+    header("Location: ".get_home_url().'/list-out-rooms?success=1');
+    exit;
     
 }
 
@@ -308,7 +326,7 @@ function display_room_profile(){
     if(!empty($data)){
         $i=0;
         foreach($data as $room_profilename){
-            $link = home_url()."/create-room-profile?rp_name='.$room_profilename.'";
+            $link = home_url()."/create-room-profile?rp_name=".$room_profilename;
             $content.='<tr><td><div class="checkbox checkbox-inline checkbox-styled"><label><input type="checkbox" name="chk_roomprofile'.$i.'" class="chkall"></label></div><input type="hidden" name="roomprofile_name'.$i.'" value="'.$room_profilename.'"></td><td>'.$room_profilename.'</td><td><a href="'.$link.'" data-roomprofile_name="'.$room_profilename.'" class="edit_room_profile">Edit</a></td></tr>';
             $i++;    
         }
@@ -348,10 +366,12 @@ function delete_room_profile(){
             $room_names[] = $_POST[$roomprofile_name];
         }
     }
-    $req_param = json_encode(array('ProfileName'=>$room_names));
-    print_r($req_param);die();
+    $req_param = json_encode(array('ProfileName'=>$room_names,'userid'=>get_current_user_id()));
+    #print_r($req_param);die();
     doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/delete_room_profile',$req_param);
-    wp_redirect(get_home_url().'/list-out-room-profile/');
+    //wp_redirect(get_home_url().'/list-out-room-profile/');
+    header("Location: ".get_home_url().'/list-out-room-profile/');
+    exit;
 }
 
 /**
@@ -379,10 +399,12 @@ function delete_rooms(){
             $room_names[] = $_POST[$room_name];
         }
     }
-    $req_param = json_encode(array('RoomName'=>$room_names));
+    $req_param = json_encode(array('RoomName'=>$room_names,'userid'=>get_current_user_id()));
     //print_r($req_param);die();
     doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/delete_rooms',$req_param);
-    wp_redirect(get_home_url().'/list-out-rooms/');
+    //wp_redirect(get_home_url().'/list-out-rooms/');
+    header("Location: ".get_home_url().'/list-out-rooms');
+    exit;
 }
 
 /**
@@ -407,7 +429,9 @@ function create_room_api(){
         }
         wp_redirect(get_home_url().'/create_room/?RoomName='.$_POST['OldRoomName'].'&error='.$error);
     }else{
-        wp_redirect(get_home_url().'/list-out-rooms/');
+        //wp_redirect(get_home_url().'/list-out-rooms/');
+        header("Location: ".get_home_url().'/list-out-rooms/');
+        exit;
     }
 }
 
@@ -426,7 +450,9 @@ function create_room_profile(){
     $PSTNEnabled         = true;
     $action_room_profile = "create_room_profile";
     if(!empty($_REQUEST['rp_name'])){
-        $room_profile_data = json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_room_profile_info',json_encode(array('ProfileName'=>$_REQUEST['rp_name']))));
+        $request = json_encode(array('ProfileName'=>trim($_REQUEST['rp_name']),'userid'=>get_current_user_id()));
+
+        $room_profile_data = json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_room_profile_info',$request));
 
         $ProfileName        = $room_profile_data->ProfileName;
         $Timezone           = $room_profile_data->Timezone;
@@ -530,6 +556,7 @@ function create_room_profile(){
     <label for="PSTNEnabled">Enable Calling</label></div>
     <input type="hidden" name="action" value="'.$action_room_profile.'">
     <input type="hidden" name="username" id="username" value="'.get_username().'">
+    <input type="hidden" name="userid" id="userid" value="'.get_current_user_id().'">
     <input class="btn btn-raised btn-primary create_room_profile_submit" type="Submit" value="submit"/> <input class="btn btn-raised btn-primary button_link" type="button" value="Cancel" data-link="'.get_home_url().'/list-out-room-profile"/>
     </form></div>
     ';
@@ -553,7 +580,9 @@ function create_room_profile_api(){
         }
         wp_redirect(get_home_url().'/create-room-profile/?error='.$error);
     }else{
-        wp_redirect(get_home_url().'/list-out-room-profile/');
+        //wp_redirect(get_home_url().'/list-out-room-profile/');
+        header("Location: ".get_home_url().'/list-out-room-profile/');
+        exit;
     }
     
 }
@@ -575,7 +604,9 @@ function update_room_profile_api(){
         }
         wp_redirect(get_home_url().'/create-room-profile/?rp_name='.$_POST["OldProfileName"].'&error='.$error);
     }else{
-        wp_redirect(get_home_url().'/list-out-room-profile/');
+        //wp_redirect(get_home_url().'/list-out-room-profile/');
+        header("Location: ".get_home_url().'/list-out-room-profile/');
+        exit;
     }
 }
 
@@ -776,10 +807,55 @@ function update_device_form(){
 
 add_shortcode('create_request','create_request');
 function create_request(){
+    if($_POST){
+    if($_POST['action_for'] == 'update'){
+        $data=doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/requests_delete',json_encode(array('request_name'=>[$_POST['RequestName']],'userid'=>get_current_user_id())));
+    }
+    $Form_data['request_name']   = $_POST['RequestName'];
+    $Form_data['Status']        = $_POST['Status'];
+    $Form_data['RequestType']   = $_POST['RequestType'];
+    $Form_data['Check_Email']   = (string)!empty($_POST['email_chk'])?'1':'0';
+    $Form_data['Check_Text']    = (string)!empty($_POST['text_chk'])?'1':'0';
+    $Form_data['Check_Call']    = (string)!empty($_POST['call_chk'])?'1':'0';
+    $Form_data['EmailID']       = $_POST['EmailID'];
+    $Form_data['TextNumber']    = $_POST['TextNumber'];
+    $Form_data['CallNumber']    = $_POST['CallNumber'];
+    //$Form_data['NotificationTemplate']    =$_POST['notification_Temp'];
+    //$Form_data['Level']         = $_POST['count'];
+    $Form_data['Conversation'] = array();
+    
+    $temp=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_notification_template',json_encode(array('template_name'=>$_POST['notification_Temp'],'username'=>get_username(),'userid'=>get_current_user_id()))));
+    $Form_data['NotificationTemplate'] = $temp->Items[0]->template;
+
+    for($i=1;$i<=$_POST['count'];$i++){
+        $Form_data['Q'.$i] = addslashes($_POST['guest_request'.$i]);
+        $Form_data['A'.$i] = addslashes($_POST['alexa_response'.$i]);
+        $Form_data['Conversation'][]=[$Form_data['Q'.$i],'User'];
+        if($i == count($_POST['count'])){
+            $res = 'Alexa';
+        }else{
+            $res = 'EndConversation';
+        }
+        $Form_data['Conversation'][]=[$Form_data['A'.$i],$res];
+    }
+    $Form_data['username']=get_username();
+    $Form_data['userid']  =get_current_user_id();
+    //print_r(json_encode($Form_data));die();
+    $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/requests_insert',json_encode($Form_data)));
+    if($data->error){
+        echo '<div class="alert alert-callout alert-danger col-md-offset-3 col-md-6">'.$data->error.'</div>';
+    }else{
+        wp_redirect(get_home_url('').'/requests-list/');
+    }
+    
+    }
+    
     $action_for   = "insert";
     $add_request_button_value = "+";
+    $noti_display = "none";
     if($_REQUEST['RequestName']){
-        $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/request_info',json_encode(array('request_name'=>$_REQUEST['RequestName']))));
+        $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/request_info',json_encode(array('request_name'=>$_REQUEST['RequestName'],'userid'=>get_current_user_id()))));
+        //print_r($data);
         $request_name = $data[0]->request_name;
         $Status       = $data[0]->Status;
         $RequestType  = $data[0]->RequestType;
@@ -788,7 +864,7 @@ function create_request(){
         $TextNumber   = $data[0]->TextNumber;
         $CallNumber   = $data[0]->CallNumber;
         $notification_Temp   = $data[0]->NotificationTemplate;
-        $Level        = $data[0]->Level;
+        #$Level        = $data[0]->Level;
         $Conversation = $data[0]->Conversation;
         $guest_request1 = $Conversation[0][0];  
         $alexa_response1= $Conversation[1][0];
@@ -797,10 +873,11 @@ function create_request(){
         $email_chk_ = !empty($EmailID)?"checked":"";
         $text_chk_  = !empty($TextNumber)?"checked":"";
         $call_chk_  = !empty($CallNumber)?"checked":"";
-        $add_request_button_value = ($Level == 1)?"+":"-";
+        $add_request_button_value = (count($Conversation) == 2)?"+":"-";
+        $noti_display = ($RequestType=="General Information")?"none":"";
         
     }
-    echo '<div class="col-md-offset-3 col-md-6 card card-tiles style-default-light"><form class="form create_user create_request form-validate" action="'.admin_url('admin-post.php').'" method="POST" name="request">';
+    echo '<div class="col-md-offset-3 col-md-6 card card-tiles style-default-light"><form class="form create_user create_request form-validate" action="'.home_url().'/create-request" method="POST" name="request">';
     echo '<div class="form-group floating-label requestname">
     <input class="form-control" type="textbox" name="RequestName" id="RequestName" value="'.$request_name.'" required '.$readonly.'>
     <label for="RequestName ">Request Name *</label></div>';
@@ -813,7 +890,8 @@ function create_request(){
     
     
     foreach($request_types->Items as $type){
-        echo'<option value="'.$type->request_type.'">'.$type->request_type.'</option>';
+        $_sel = ($RequestType == $type->request_type)?"selected":"";
+        echo'<option value="'.$type->request_type.'" '.$_sel.'>'.$type->request_type.'</option>';
     }
     echo'</select><label for="RequestType">Request Type *</label></div>';
 
@@ -850,13 +928,16 @@ function create_request(){
             
             
             if($who == 'Alexa' || $who == 'EndConversation'){
-            $add_request_button_value = ($who == 'EndConversation')?"+":"-";
+            #$add_request_button_value = ($who == 'EndConversation')?"+":"-";
+            $add_request_button_value = count($Conversation)/2==$j?"+":"-";
             echo '<div class="form-group floating-label alexaresponse alexaresponse'.$j.'" '.$style.'>
             <textarea class="form-control" name="alexa_response'.$j.'" id="alexa_response'.$j.'" style="width:400px;" required>'.$result.'</textarea>
             <label for="alexa_response'.$j.'">Alexa Response *</label>
             </div>';
+            if($j<3){
             echo '<div class="form-group floating-label">
             <input type="button" name="add_request'.$j.'" id="add_request'.$j.'" class="btn btn-block ink-reaction btn-info add_request" data-level="'.$j.'" value="'.$add_request_button_value.'" '.$style.'></div>';
+            }
             $j++;
             }
             
@@ -869,25 +950,26 @@ function create_request(){
 
     
     echo '<div class="forlevel2"></div></br>';                    
-
-    echo '<div class="notification"><label for="alexa_response ">Notification</label>
+    
+    echo '<div class="notification" style="display:'.$noti_display.';"><label for="alexa_response ">Notification</label>
     <table class="table no-margin"><tr><td><div class="checkbox checkbox-inline checkbox-styled"><label><input type="checkbox" name="email_chk" id="email_chk" value="email" '.$email_chk_.'></label></div></td><td>Email:</td><td><input class="form-control" type="textbox" name="EmailID" id="EmailID" value="'.$EmailID.'" required></td></tr>
     <tr><td><div class="checkbox checkbox-inline checkbox-styled"><label><input type="checkbox" name="text_chk" id="text_chk" value="text" '.$text_chk_.'></td><td>Text:</td><td><input class="form-control" type="textbox" name="TextNumber" id="TextNumber" value="'.$TextNumber.'" required></label></div></td></tr>
     <tr><td><div class="checkbox checkbox-inline checkbox-styled"><label><input type="checkbox" name="call_chk" id="call_chk" value="call" '.$call_chk_.'></label></div></td><td>Call:</td><td><input class="form-control" type="textbox" name="CallNumber" id="CallNumber" value="'.$CallNumber.'" required></td></tr>
     <tr><td colspan="3"><div style="color:#a94442;display:none;" id="noti_req">Any one Notification is required.</div></td></tr>
     </table></div>'; 
     /*echo '<div class="form-group floating-label notificationtemplate"><input class="form-control" type="textbox" name="notification_Temp" id="notification_Temp" value="'.$notification_Temp.'" required><label for="notification_template ">Notification Template</label></div>';  */
-    echo '<div class="form-group floating-label notificationtemplate"><select name="notification_Temp" id="notification_Temp" class="form-control"><option>Select Template</option>';
-    $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_notification_template',json_encode(array('template_name'=>''))));
+    echo '<div class="form-group floating-label notificationtemplate" style="display:'.$noti_display.';"><select name="notification_Temp" id="notification_Temp" class="form-control"><option>Select Template</option>';
+    $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_notification_template',json_encode(array('template_name'=>'','username'=>get_username()))));
     if(!empty($data->Items)){
         foreach($data->Items as $temp){
         $_sel = ($notification_Temp == $temp->template)?"selected":"";    
-        echo '<option value="'.$temp->template_name.'" '.$_sel.'>'.$temp->template_name.'</option>';
+        $tempName = explode('_@_',$temp->template_name)[1];
+        echo '<option value="'.$tempName.'" '.$_sel.'>'.$tempName.'</option>';
         }
     }
     echo'</select><label for="notification_Temp ">Notification Template</label></div>';
     
-    echo '<input class="btn btn-raised btn-primary button_link" type="button" name="request_can" id="request_can" data-link="'.get_home_url().'/requests-list/" value="Cancel"> <input class="btn btn-raised btn-primary" type="submit" name="sub" id="sub" value="Submit"><input type="hidden" name="action" value="insert_request"><input type="hidden" name="action_for" id="action_for" value="'.$action_for.'">';                    
+    echo '<input class="btn btn-raised btn-primary button_link" type="button" name="request_can" id="request_can" data-link="'.get_home_url().'/requests-list/" value="Cancel"> <input class="btn btn-raised btn-primary" type="submit" name="sub" id="sub" value="Submit"><!--<input type="hidden" name="action" value="insert_request">--><input type="hidden" name="action_for" id="action_for" value="'.$action_for.'">';                    
     echo '</form></div>';        
 }
 
@@ -896,10 +978,10 @@ function create_request(){
  * And Redirects to the List of the Pages
  */
 
-add_action('admin_post_insert_request','insert_request');
+/*add_action('admin_post_insert_request','insert_request');
 function insert_request(){
     if($_POST['action_for'] == 'update'){
-        $data=doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/requests_delete',json_encode(array('request_name'=>[$_POST['RequestName']])));
+        $data=doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/requests_delete',json_encode(array('request_name'=>[$_POST['RequestName']],'userid'=>get_current_user_id())));
     }
     $Form_data['request_name']   = $_POST['RequestName'];
     $Form_data['Status']        = $_POST['Status'];
@@ -914,7 +996,7 @@ function insert_request(){
     //$Form_data['Level']         = $_POST['count'];
     $Form_data['Conversation'] = array();
     
-    $temp=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_notification_template',json_encode(array('template_name'=>$_POST['notification_Temp']))));
+    $temp=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_notification_template',json_encode(array('template_name'=>$_POST['notification_Temp'],'username'=>get_username(),'userid'=>get_current_user_id()))));
     $Form_data['NotificationTemplate'] = $temp->Items[0]->template;
 
     for($i=1;$i<=$_POST['count'];$i++){
@@ -928,10 +1010,12 @@ function insert_request(){
         }
         $Form_data['Conversation'][]=[$Form_data['A'.$i],$res];
     }
+    $Form_data['username']=get_username();
+    $Form_data['userid']  =get_current_user_id();
     //print_r(json_encode($Form_data));die();
     $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/requests_insert',json_encode($Form_data)));
     wp_redirect(get_home_url('').'/requests-list/');
-} 
+} */
 
 /**
  * Displays the Requests List
@@ -940,22 +1024,23 @@ function insert_request(){
 
 add_shortcode('request_list','request_list');
 function request_list(){
-    $data=json_decode(doCurl_GET('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/requests_read'));
+    $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/requests_read',json_encode(array('username'=>get_username()))));
     
     print'<div class="col-md-offset-1 col-md-10 card card-tiles style-default-light"><form class="form" name="requests" action="'.admin_url('admin-post.php').'" method="POST">';
-    print"<input class='btn btn-raised btn-primary' type='submit' name='delete_request' id='delete_request' value='Delete Request'> <input class='btn btn-raised btn-primary button_link' type='button' name='create_request' id='create_request' data-link='".get_home_url()."/create-request/' value='Create Request'>";
+    print"<input class='btn btn-raised btn-primary delete_action' type='button' name='delete_request' id='delete_request' value='Delete Request'> <input class='btn btn-raised btn-primary button_link' type='button' name='create_request' id='create_request' data-link='".get_home_url()."/create-request/' value='Create Request'>";
     print"<table class='table no-margin'><tr><th><div class='checkbox checkbox-inline checkbox-styled'><label><input type='checkbox' name='chkall' id='chkall'></label></div></th><th>Request Name</th><th>Request Type</th><th>Status</th><th>Notifications</th><th></th></tr>";
     for($i=0;$i<count($data);$i++){ 
+        $RequestName = explode('_@_',$data[$i]->request_name)[1];
         $email_Icon = !empty($data[$i]->EmailID)?"<span class='dashicons dashicons-email'></span>":"";
         $text_Icon = !empty($data[$i]->TextNumber)?"<span class='dashicons dashicons-media-text'></span>":"";
         $call_Icon = !empty($data[$i]->CallNumber)?"<span class='dashicons dashicons-phone'></span>":"";
         
         print"<tr><td><div class='checkbox checkbox-inline checkbox-styled'><label><input type='checkbox' name='chk_request".$i."' id='chk_request".$i."' class='chkall' value='".$data[$i]->request_name."'></label></div></td>
-        <td>".$data[$i]->request_name."</td>
+        <td>".$RequestName."</td>
         <td>".$data[$i]->RequestType."</td>
         <td>".$data[$i]->Status."</td>
         <td>".$call_Icon." ".$text_Icon." ".$email_Icon."</td>
-        <td><a href='".get_home_url()."/create-request?RequestName=".$data[$i]->request_name."'>Edit</a></td></tr>";
+        <td><a href='".get_home_url()."/create-request?RequestName=".$RequestName."'>Edit</a></td></tr>";
     }
     print"</table><input type='hidden' name='action' id='action' value='delete_request'><input type='hidden' name='no_of_requests' id='no_of_requests' value='".$i."'></form></div>";
 }
@@ -974,7 +1059,7 @@ function delete_request(){
             $request_names[] = $_POST['chk_request'.$i];
         }
     }
-    $data=doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/requests_delete',json_encode(array('request_name'=>$request_names)));
+    $data=doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/requests_delete',json_encode(array('request_name'=>$request_names,'userid'=>get_current_user_id())));
     wp_redirect(get_home_url('').'/requests-list/');
 }
 
@@ -1689,61 +1774,78 @@ function delete_req_templates(){
 
 add_shortcode('notification_template','notification_template');
 function notification_template(){
+    if($_POST){
+        if($_POST['action_for']=='update'){
+            $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/update_notification_template',json_encode(array('template_name'=>$_POST['template_name'],'old_template_name'=>$_POST['old_template_name'],'template'=>$_POST['tempcontent'],'username'=>get_username(),'userid'=>get_current_user_id()))));
+        }else{
+            $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/add_notification_template',json_encode(array('template_name'=>$_POST['template_name'],'old_template_name'=>$_POST['old_template_name'],'template'=>$_POST['tempcontent'],'username'=>get_username(),'userid'=>get_current_user_id()))));
+        }
+        if($data->error){
+            echo '<div class="alert alert-callout alert-danger col-md-offset-3 col-md-6">'.$data->error.'</div>';
+        }else{
+            wp_redirect(get_home_url().'/notification-temp-list');
+        }
+        $template_name = $_POST['template_name'];
+        $tempcontent   = $_POST['tempcontent'];
+    }
     $temp_name = $_REQUEST['TempName']?$_REQUEST['TempName']:'';
     if($temp_name){
-        $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_notification_template',json_encode(array('template_name'=>$temp_name))));
-        $template_name       = $data->Items[0]->template_name;
+        $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_notification_template',json_encode(array('template_name'=>$temp_name,'username'=>get_username(),'userid'=>get_current_user_id()))));
+        $template_name       = explode('_@_',$data->Items[0]->template_name)[1];
         $tempcontent= $data->Items[0]->template;
     }
     $action_for = empty($_REQUEST['TempName'])?'insert':'update';
-    echo '<div class="col-md-offset-3 col-md-6 card card-tiles style-default-light"><form class="form request_type_template form-validate" action="'.admin_url('admin-post.php').'" method="POST">
+    echo '<div class="col-md-offset-3 col-md-6 card card-tiles style-default-light"><form class="form request_type_template form-validate" action="'.home_url().'/notification_template" method="POST">
 
     <div class="form-group floating-label name">
-    <input class="form-control" type="textbox" name="template_name" id="template_name" value="'.$template_name.'" required '.$readonly.' style="width:200px;">
-    <label for="template_name">Notification Template Name *</label>
+    <input class="form-control" type="textbox" name="template_name" id="template_name" value="'.$template_name.'" '.$readonly.' style="width:200px;">
+    <label style="height: 50px;" for="template_name">Notification Template Name *</label>
+    <div id="errorMessage_noti" style="display: none; color: rgb(169, 68, 66);"></div>
     </div>  
 
     <div class="form-group floating-label content">
-    <textarea class="form-control" name="tempcontent" id="tempcontent" style="width:400px;" required>'.$tempcontent.'</textarea>
-    <label for="tempcontent">Template *</label>
+    <textarea class="form-control" name="tempcontent" id="tempcontent" style="width:400px;">'.$tempcontent.'</textarea>
+    <label style="height: 65px;" for="tempcontent">Template *</label>
+    <div id="errorMessage_noti_content" style="display: none; color: rgb(169, 68, 66);"></div>
     </div>     
     
     <div>
     Note: Dynamic Variables : #roomno
     </div>
     
-    <input type="hidden" name="action" value="notification_template_insert">
+    <!--<input type="hidden" name="action" value="notification_template">-->
     <input type="hidden" name="action_for" value="'.$action_for.'">
     <input type="hidden" name="old_template_name" value="'.$template_name.'">
-    <input class="btn btn-raised btn-primary" type="Submit" value="submit"/>
+    <input class="btn btn-raised btn-primary" id="noti_submit" type="button" value="submit"/>
     <input class="btn btn-raised btn-primary button_link" type="button" value="Cancel" data-link="'.get_home_url().'/notification-temp-list"/>
     </form></div>
     ';
 }
 
-add_action('admin_post_notification_template_insert','notification_template_insert');
+/*add_action('admin_post_notification_template_insert','notification_template_insert');
 function notification_template_insert(){
     if($_POST['action_for']=='update'){
-        $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/update_notification_template',json_encode(array('template_name'=>$_POST['template_name'],'old_template_name'=>$_POST['old_template_name'],'template'=>$_POST['tempcontent']))));
+        $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/update_notification_template',json_encode(array('template_name'=>$_POST['template_name'],'old_template_name'=>$_POST['old_template_name'],'template'=>$_POST['tempcontent'],'username'=>get_username()))));
     }else{
-        $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/add_notification_template',json_encode(array('template_name'=>$_POST['template_name'],'old_template_name'=>$_POST['old_template_name'],'template'=>$_POST['tempcontent']))));
+        $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/add_notification_template',json_encode(array('template_name'=>$_POST['template_name'],'old_template_name'=>$_POST['old_template_name'],'template'=>$_POST['tempcontent'],'username'=>get_username()))));
     }
     wp_redirect(get_home_url().'/notification-temp-list');
-}
+}*/
 
 add_shortcode('notification-temp-list','notification_temp_list');
 function notification_temp_list(){
-    $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_notification_template',json_encode(array('template_name'=>''))));
+    $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_notification_template',json_encode(array('template_name'=>'','username'=>get_username(),'userid'=>get_current_user_id()))));
     
     $content='<div class="col-md-offset-1 col-md-10 card card-tiles style-default-light"><form class="form" name="delete_template" action="'.admin_url('admin-post.php').'" method="POST">';
-    $content.='<input class="btn btn-raised btn-primary" type="submit" name="deletetemplate" id="deletetemplate" value="Delete Template"> <a href="'.get_home_url().'/notification_template/'.'" name="createtemplate" id="createtemplate"><input class="btn btn-raised btn-primary" type="button" value="Create Template"></a>';
+    $content.='<input class="btn btn-raised btn-primary delete_action" type="button" name="deletetemplate" id="deletetemplate" value="Delete Template"> <a href="'.get_home_url().'/notification_template/'.'" name="createtemplate" id="createtemplate"><input class="btn btn-raised btn-primary" type="button" value="Create Template"></a>';
     $content.='<table class="table no-margin"><tr><th><div class="checkbox checkbox-inline checkbox-styled"><label><input type="checkbox" name="chkall" id="chkall"></label></div></th><th>Template Names</th><th>Templates</th><th>Edit</th></tr>';
     
     $i=0;  
     
     if(!empty($data->Items)){
         foreach($data->Items as $temp){
-            $content.='<tr><td><div class="checkbox checkbox-inline checkbox-styled"><label><input type="checkbox" name="chk_template'.$i.'" class="chkall" value="'.$temp->template_name.'"></label></div></td><td>'.$temp->template_name.'</td><td>'.$temp->template.'</td><td><a href="'.get_home_url().'/notification_template?TempName='.$temp->template_name.'" name="edit_temp'.$i.'" id="edit_temp'.$i.'" class="edit_temps" data-template_name="'.$temp->template_name.'">Edit</a></td></tr>';
+            $TemplateName = explode('_@_',$temp->template_name)[1];
+            $content.='<tr><td><div class="checkbox checkbox-inline checkbox-styled"><label><input type="checkbox" name="chk_template'.$i.'" class="chkall" value="'.$TemplateName.'"></label></div></td><td>'.$TemplateName.'</td><td>'.$temp->template.'</td><td><a href="'.get_home_url().'/notification_template?TempName='.$TemplateName.'" name="edit_temp'.$i.'" id="edit_temp'.$i.'" class="edit_temps" data-template_name="'.$TemplateName.'">Edit</a></td></tr>';
             $i++;
         }
     }
@@ -1763,7 +1865,7 @@ function delete_noti_templates(){
             $temp_to_delete[]=$_POST[$chk];
         }
     }
-    $temp_to_delete = json_encode(array('Notification_Temp'=>$temp_to_delete));
+    $temp_to_delete = json_encode(array('Notification_Temp'=>$temp_to_delete,'userid'=>get_current_user_id()));
     
     doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/notification_temp_delete',$temp_to_delete);
     wp_redirect(get_home_url('').'/notification-temp-list/');
@@ -1927,20 +2029,7 @@ function my_profile(){
     }
 }
 
-function get_username(){
-    $current_user = wp_get_current_user();
-    if($current_user->roles[0] == 'administrator'){
-        $iam_username = $current_user->user_email;
-    }else{
-        $args=array(
-        'meta_key'=>'user_belongs_to',
-        'meta_value'=>get_current_user_id()
-        );
-        $users = get_users($args);
-        $iam_username = $users->user_email;
-    }
-    return $iam_username;
-}
+
 /**
  * End of Plugin
  */
