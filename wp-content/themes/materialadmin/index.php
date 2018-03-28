@@ -135,17 +135,12 @@ if(is_user_logged_in()){
         }
         ?>
 
-        <li class="gui-folder">
-          <a>
-            <div class="gui-icon"><i class="md md-room"></i></div>
-            <span class="title">Room</span>
+        <li>
+          <a href="<?php echo get_home_url().'/devices'?>" >
+            <div class="gui-icon"><i class="md md-devices"></i></div>
+            <span class="title">Devices</span>
           </a>
-          <ul>
-            <li><a href="<?php echo get_home_url().'/create_room'?>" ><span class="title">Add New</span></a></li>
-            <li><a href="<?php echo get_home_url().'/list-out-rooms'?>" ><span class="title">All Rooms</span></a></li>
-          </ul>
         </li>
-
 
         <li class="gui-folder">
           <a>
@@ -157,13 +152,38 @@ if(is_user_logged_in()){
             <li><a href="<?php echo get_home_url().'/list-out-room-profile'?>" ><span class="title">All Room Profiles</span></a></li>
           </ul>
         </li>
-
-
-        <li>
-          <a href="<?php echo get_home_url().'/devices'?>" >
-            <div class="gui-icon"><i class="md md-devices"></i></div>
-            <span class="title">Devices</span>
+        
+        <li class="gui-folder">
+          <a>
+            <div class="gui-icon"><i class="md md-room"></i></div>
+            <span class="title">Room</span>
           </a>
+          <ul>
+            <li><a href="<?php echo get_home_url().'/create_room'?>" ><span class="title">Add New</span></a></li>
+            <li><a href="<?php echo get_home_url().'/list-out-rooms'?>" ><span class="title">All Rooms</span></a></li>
+          </ul>
+        </li>
+        
+        <!--<li class="gui-folder">
+          <a>
+            <div class="gui-icon"><span class="glyphicon glyphicon-list-alt"></span></div>
+            <span class="title">Templates</span>
+          </a>
+          <ul>
+            <--<li><a href="<?php echo get_home_url().'/request-type'?>" ><span class="title">Request Type</span></a></li> ->
+            <li><a href="<?php echo get_home_url().'/notification'?>" ><span class="title">Notification</span></a></li>
+          </ul>
+        </li>-->
+        
+        <li class="gui-folder">
+          <a>
+            <div class="gui-icon"><i class="md md-assignment"></i></div>
+            <span class="title">Templates</span>
+          </a>
+          <ul>
+            <li><a href="<?php echo get_home_url().'/notification_template'?>" ><span class="title">Add New</span></a></li>
+            <li><a href="<?php echo get_home_url().'/notification-temp-list'?>" ><span class="title">All Notification Template</span></a></li>
+          </ul>
         </li>
 
         <!-- BEGIN FORMS -->
@@ -194,18 +214,6 @@ if(is_user_logged_in()){
             <span class="title">Audit Log</span>
           </a>
         </li>
-        
-        <li class="gui-folder">
-          <a>
-            <div class="gui-icon"><span class="glyphicon glyphicon-list-alt"></span></div>
-            <span class="title">Templates</span>
-          </a>
-          <!--start submenu -->
-          <ul>
-            <li><a href="<?php echo get_home_url().'/request-type'?>" ><span class="title">Request Type</span></a></li>
-            <li><a href="<?php echo get_home_url().'/notification'?>" ><span class="title">Notification</span></a></li>
-          </ul><!--end /submenu -->
-        </li><!--end /menu-li -->
         
         <li>
           <a href="<?php echo get_home_url().'/reports'?>" >
