@@ -63,11 +63,8 @@ $users = get_userdata(get_current_user_id());
         <br/>
         <input type="hidden" name="redirect_to" value="<?php echo get_home_url().'/user-list/'?>" />
         <input type="hidden" name="action" value="user_register" />
-        <div class="row">
-         <div class="col-xs-3 text-right">
-            <input class="btn btn-primary btn-raised" type="submit" name="wp-submit" id="wp-submit" value="Update"
-        </div><!--end .col -->
-    </div><!--end .row -->
+        <input class="btn btn-primary btn-raised" type="submit" name="wp-submit" id="wp-submit" value="Update">
+        <input class="btn btn-raised btn-danger button_link" type="button" name="wp-cancel" id="wp-cancel" value="Cancel" data-link="<?php echo home_url().'/dashboard'?>">
 </form>
 </div><!--end .col -->
 </div><!--end .row -->

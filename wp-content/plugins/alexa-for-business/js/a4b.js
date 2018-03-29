@@ -114,7 +114,7 @@ function make_room_dis(){
 function emailchk(){
     if($('#email_chk').is(':checked') == true){
         $('#EmailID').attr('readonly',false);
-        $('#EmailID').attr('required',true);
+        //$('#EmailID').attr('required',true);
     }else{
         $('#EmailID').attr('readonly',true);
         $('#EmailID').attr('required',false);
@@ -124,7 +124,7 @@ function emailchk(){
 function textchk(){
     if($('#text_chk').is(':checked') == true){
         $('#TextNumber').attr('readonly',false);
-        $('#TextNumber').attr('required',true);
+        //$('#TextNumber').attr('required',true);
     }else{
         $('#TextNumber').attr('readonly',true);
         $('#TextNumber').attr('required',false);
@@ -134,7 +134,7 @@ function textchk(){
 function callchk(){
     if($('#call_chk').is(':checked') == true){
         $('#CallNumber').attr('readonly',false);
-        $('#CallNumber').attr('required',true);
+        //$('#CallNumber').attr('required',true);
     }else{
         $('#CallNumber').attr('readonly',true);
         $('#CallNumber').attr('required',false);
@@ -190,13 +190,60 @@ $('.js-example-basic-multiple').select2();
 
 
 $(document).on('submit','form[name=request]',function(e){
-    if($('#RequestType').val() =='service_request' && $('#email_chk').is(':checked')===false && $('#text_chk').is(':checked')===false && $('#call_chk').is(':checked')===false){
+    var count = 0;
+    if($('#notification_Temp').val() == "" && $('#RequestType').val() =='Service Request'){
+        count++;
+        $('#notification_Temp_error').show();
+    }else{
+        $('#notification_Temp_error').hide();
+    }
+    if($('#RequestType').val() =='Service Request' && $('#email_chk').is(':checked')===false && $('#text_chk').is(':checked')===false && $('#call_chk').is(':checked')===false){
+        count++;
         $('#noti_req').show();
-        e.preventDefault();
-        return false;
     }else{
         $('#noti_req').hide();
+    }
+    if($('#email_chk').is(':checked')== true && $('#EmailID').val()==""){
+        count++;
+        $('#EmailID_error').html('This field is required.');
+        $("#EmailID_error").show();
+    }else{
+        $("#EmailID_error").hide();
+    }
+    if($('#email_chk').is(':checked')== true && $('#EmailID').val()!=""){
+        if(!validateEmail($('#EmailID').val())){
+            count++;
+            $('#EmailID_error').html('Please enter a valid email address.');
+            $("#EmailID_error").show();
+        }else{
+            $("#EmailID_error").hide();
+        }
+    }
+    if($('#text_chk').is(':checked')== true && $('#TextNumber').val()==""){
+        count++;
+        $('#TextNumber_error').html('This field is required.');
+        $("#TextNumber_error").show();
+    }else{
+        $("#TextNumber_error").hide();
+    }
+    if($('#call_chk').is(':checked')== true && $('#CallNumber').val()==""){
+        count++;
+        $('#CallNumber_error').html('This field is required.');
+        $("#CallNumber_error").show();
+    }else{
+        $("#CallNumber_error").hide();
+    }
+    if(count ==0){
+        $('#notification_Temp_error').hide();
+        $("#EmailID_error").hide();
+        $("#TextNumber_error").hide();
+        $("#CallNumber_error").hide();
+        $('#noti_req').hide();
+        $("#EmailID_error").hide();
         $('form[name=request]').submit();
+    }else{
+        e.preventDefault();
+        return false;
     }
 });
 
@@ -305,8 +352,46 @@ $('#noti_submit').on('click',function(){
         }
  });
  
- 
+$('#RequestName,#template_name,#RoomName,#ProfileName').on('input', function() {
+  var c = this.selectionStart,
+      r = /[^a-z0-9 ]/gi,
+      v = $(this).val();
+  if(r.test(v)) {
+    $(this).val(v.replace(r, ''));
+    c--;
+  }
+  this.setSelectionRange(c, c);
+});
 
+
+/*$('#alexa_response1').on('input', function() {
+  var c = this.selectionStart,
+      r = /[^"]/gi,
+      v = $(this).val();
+  if(r.test(v)) {
+    $(this).val(v.replace(r, ''));
+    c--;
+  }
+  this.setSelectionRange(c, c);
+});*/
+ 
+$('#alexa_response1').bind('keypress', function(e) {
+    console.log( e.which );
+        var k = e.which;
+        if (k==34){
+            e.preventDefault();
+        }
+}); 
+
+function validateEmail(sEmail) {
+    var filter = /^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/;
+    if (filter.test(sEmail)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
 
 });
 

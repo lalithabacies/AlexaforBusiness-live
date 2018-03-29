@@ -74,14 +74,10 @@ if($_REQUEST['userid']){
         <input type="hidden" name="action" value="user_register" />
         <input type="hidden" name="action_for" value="<?php echo $action_for; ?>" />
         <input type="hidden" name="userid" value="<?php echo $_REQUEST['userid'];?>">
-        <div class="row">
-         <div class="col-xs-3 text-right">
-            <input class="btn btn-primary btn-raised" type="submit" name="wp-submit" id="wp-submit" value="<?php echo $button?>">
-        </div><!--end .col -->
-        <div class="col-xs-3 text-right">
-            <input class="btn btn-primary btn-raised button_link" data-link="<?php echo home_url().'/user-list' ?>" type="button" name="wp-cancel" id="wp-cancel" value="Cancel">
-        </div><!--end .col -->
-    </div><!--end .row -->
+
+        <input class="btn btn-primary btn-raised" type="submit" name="wp-submit" id="wp-submit" value="<?php echo $button?>">
+        <input class="btn btn-danger btn-raised button_link" data-link="<?php echo home_url().'/user-list' ?>" type="button" name="wp-cancel" id="wp-cancel" value="Cancel">
+
 </form>
 </div><!--end .col -->
 </div><!--end .row -->
