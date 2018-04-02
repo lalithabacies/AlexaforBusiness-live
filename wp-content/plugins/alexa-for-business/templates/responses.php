@@ -29,7 +29,7 @@
 
     print"<div class='form-group'><select class='form-control' name='downloadactions' id='downloadactions' ><option value='actions' >Actions </option><option value='download'>Export to Excel</option></select></div>";
     
-    print"<table class='table no-margin' id='myTable' ><thead><tr><th><div class='checkbox checkbox-inline checkbox-styled'><label><input type='checkbox' name='chkall' id='chkall'></label></div></th><th>Date Time</th><th>Request Name</th><th>Request Type</th><th>Room No</th><th>View Log</th></tr></thead>";
+    print"<table class='no-margin table' id='data_table_response' ><thead><tr><th><div class='checkbox checkbox-inline checkbox-styled'><label><input type='checkbox' name='chkall' id='chkall'></label></div></th><th>Date Time</th><th>Request Name</th><th>Request Type</th><th>Room No</th><th>View Log</th></tr></thead>";
 
     print "<tbody>";
     $i=0;
@@ -37,7 +37,7 @@
         foreach($data->Items as $response){
         $resquestname="";
         $resquest_room_no="";
-         $newval = explode("_@_",$response->RequestName);
+        $newval = explode("_@_",$response->RequestName);
         if(isset($newval[1]))
             $resquestname= $newval[1];
         else 
@@ -51,7 +51,7 @@
         else
             $resquest_room_no = $response->RoomNumber;
             
-        print "<tr><td><div class='checkbox checkbox-inline checkbox-styled'><label><input type='checkbox' name='chk_device".$i."' id='chk_device".$i."' class='chkall'></label></div></td><td>".$response->Date."</td><td>".$resquestname."</td><td>".$response->RequestType."</td><td>".$resquest_room_no."</td><td><a href='".get_home_url().'/device-form?RequestName='.$response->RequestName."'>View Log</a></td></tr>";
+        print "<tr><td><div class='checkbox checkbox-inline checkbox-styled'><label><input type='checkbox' name='chk_device".$i."' id='chk_device".$i."' class='chkall'><span></span></label></div></td><td>".$response->Date."</td><td>".$resquestname."</td><td>".$response->RequestType."</td><td>".$resquest_room_no."</td><td><a href='".get_home_url().'/device-form?RequestName='.$response->RequestName."'>View Log</a></td></tr>";
             $i++;
         }
     }
