@@ -70,11 +70,13 @@ function a4b_addon_analysis_stats_tabs_content() {
     $response_total=0;
     $device_total=0;
     
-    $request_data=json_decode(doCurl_GET('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/requests_read'));
+    //get_username and get_userid functions are defined in alexa-for-business plugin
+    
+    $request_data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/requests_read',json_encode(array('username'=>get_username()))));
     $request_total=count($request_data);
     
     $response_data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/scan_response',json_encode(array())));
-    $response_total=$response_data->Count;
+    //$response_total=$response_data->Count;
     
     $device_data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_devices',json_encode(array())));
     $device_total=count($device_data);
@@ -97,6 +99,7 @@ function a4b_addon_analysis_stats_tabs_content() {
         $array_for_json[$question_counter]["averagePoints"]= 7;
         $array_for_json[$question_counter]["correct"] = 55;
         $answer_counter = 0;
+        $total_res      = 0;
         $answer_array = array();
         
         $new = array();
@@ -105,13 +108,21 @@ function a4b_addon_analysis_stats_tabs_content() {
             $last_six_month[date("m/Y", strtotime(" -$j month"))]=0;
         }
         foreach($response_data->Items as $arr){
-            $dateformat = explode(",",$arr->Date)[0];
-            $date_split = explode("/",$dateformat);
-            $date       = $date_split[1]."/".$date_split[2];
-            if(array_key_exists($date,$new)){
-                $new[$date]+=1;
-            }else{
-                $new[$date]=1;
+            list($userid_res,$room_res)=explode('_@_',$arr->RequestName);
+            if($userid_res == get_userid()){
+                $dateformat = explode(",",$arr->Date)[0];
+                $date_split = explode("/",$dateformat);
+                $date       = $date_split[1]."/".$date_split[2];
+                if(array_key_exists($date,$new)){
+                    $new[$date]+=1;
+                }else{
+                    $new[$date]=1;
+                }
+                $req_name = explode("_@_",$arr->RequestName);
+                if(get_userid() == $req_name[0]){
+                    $total_res++;
+                }
+                $response_total=$total_res;
             }
         }
         $new = array_merge($last_six_month,$new);
@@ -134,10 +145,13 @@ function a4b_addon_analysis_stats_tabs_content() {
         
         $new = array();
         foreach($response_data->Items as $arr){
-            if(array_key_exists($arr->RequestType,$new)){
-                $new[$arr->RequestType]+=1;
-            }else{
-                $new[$arr->RequestType]=1;
+            list($userid_res,$room_res)=explode('_@_',$arr->RequestName);
+            if($userid_res == get_userid()){
+                if(array_key_exists($arr->RequestType,$new)){
+                    $new[$arr->RequestType]+=1;
+                }else{
+                    $new[$arr->RequestType]=1;
+                }
             }
         }
     
@@ -167,11 +181,14 @@ function a4b_addon_analysis_stats_tabs_content() {
             }
         }
     
-        foreach ($new as $key=>$value) {
-            $answer_array["answerText"] = $key;
+        foreach ($new as $key=>$value){
+            list($userid_res,$room_res)=explode('_@_',$key);
+            if($userid_res == get_userid()){
+            $answer_array["answerText"] = $room_res;
             $answer_array["totalSelected"] = $value;
             $array_for_json[$question_counter]["answers"][] = $answer_array;
             $answer_counter++;
+            }
         }
         $question_counter++;
     }
