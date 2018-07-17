@@ -1,12 +1,31 @@
 <?php
 
 if($_POST){
+    
+   
+    
         //custom_login($_POST);
         if ( !is_user_logged_in() ) {
     	$creds = array();
     	$creds['user_login'] = $_POST['username'];
     	$creds['user_password'] = $_POST['password'];
-    	$creds['remember'] = true;
+    	if(!empty($_POST['remember_me']))
+    	{
+    	    $hour = time() + 3600 * 24 * 30;
+            setcookie('username', $creds['user_login'], $hour);
+            setcookie('password', $creds['user_password'], $hour);
+			$creds['remember'] = true;
+    	}
+		else
+		{
+		    unset($_COOKIE['username']);
+		    unset($_COOKIE['password']);
+		     $hour = time() + 3600 * 24 * 30;
+            setcookie('username', "", $hour);
+            setcookie('password', "", $hour);
+			$creds['remember'] = false;
+		}
+		
     	$creds['redirect_to'] = get_home_url().'/dashboard';
     	
     	if ( ! empty( $_POST['username'] ) ) {
@@ -41,12 +60,22 @@ if($_POST){
         }
         }
     }
+   else if(isset($_COOKIE['username']) && isset($_COOKIE['password']))
+	{
+		 if ( !is_user_logged_in() ) {
+			$c_username = $_COOKIE['username'];
+			$c_password = $_COOKIE['password'];
+			$c_remember = true;		
+		 } 
+	}	
+	
     //else{
         $attributes['registered'] = isset( $_REQUEST['registered'] );
         $attributes['reset_pwd']  = isset( $_REQUEST['reset_pwd'] );
         $attributes['rp_success'] = $_REQUEST['rp_success'];
         
-        
+   
+    
     ?>
     <?php if ( $attributes['registered']) : ?>
     <p class="login-info"><div class="alert alert-callout alert-success col-md-offset-3 col-md-6">
@@ -82,18 +111,24 @@ if($_POST){
                
                <form class="form floating-label form-validate" id="login" action="<?php echo get_home_url().'/login/'?>" accept-charset="utf-8" method="post">
                 <div class="form-group">
-                 <input type="text" class="form-control" id="username" name="username" >
+                 <input type="text" class="form-control" id="username" name="username" value="<?php  echo $c_username;?>" >
                  <span id="errorMessage" >Please enter a valid username</span>
                  <label style="height: 50px;" for="username">Username <strong>*</strong></label>
              </div>
              <div class="form-group">
-                 <input type="password" class="form-control" id="password" name="password" required>
+                 <input type="password" class="form-control" id="password" name="password" required value="<?php  echo $c_password;?>">
                  <label for="password">Password <strong>*</strong></label>
                  <p class="help-block"><a href="<?php echo get_home_url().'/lost-password?action=lostpassword'?>">Forgot Password?</a></p>
                  
                  <!--<a href="<?php echo wp_lostpassword_url( get_bloginfo('url') ); ?>" title="Lost Password">Lost Password</a>-->
              </div>
              <br/>
+               <div class="form-group">
+              <label>
+                <input type="checkbox" name="remember_me" id="remember_me" <?php  if(!empty($c_username)){ echo "checked"; }?>>
+                Remember me 
+              </label>
+              </div>
              <div class="row">
                  <div class="col-xs-6 text-left">
                   <!--<div class="checkbox checkbox-inline checkbox-styled">
@@ -106,12 +141,12 @@ if($_POST){
           <input class="btn btn-primary btn-raised" type="submit" value="Login">
       </div><!--end .col -->
   </div><!--end .row -->
-  <div class="">
+ <!--<div class="">
     <h4 class="text-light text-center">
         Don't Have Account yet?
     </h4>
     <a class="btn btn-block btn-raised btn-primary" href="<?php echo get_home_url()."/register" ?>">Register Here</a>
-</div>
+</div> -->
 </form>
 </div><!--end .col -->
 

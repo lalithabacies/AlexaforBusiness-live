@@ -1,5 +1,9 @@
 <?php
 
+  if($_REQUEST['delete']){
+        echo '<div class="alert alert-callout alert-success col-md-offset-3 col-md-6">Template has been deleted successfully.</div>';
+		}
+		
     if($_POST){
         $temp_to_delete=array();
         for($i=0;$i<=$_POST['no_of_temps'];$i++){
@@ -14,14 +18,14 @@
         if($result->error){
             echo '<div class="alert alert-callout alert-danger col-md-offset-3 col-md-6">'.$result->error.'</div>';
         }else{
-            wp_redirect(get_home_url('').'/notification-temp-list/');
+            wp_redirect(get_home_url('').'/notification-temp-list?delete=1');
         }
     }
 
     $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_notification_template',json_encode(array('template_name'=>'','username'=>get_username(),'userid'=>get_userid()))));
     
-    $content='<div class="col-md-offset-1 col-md-10 card card-tiles style-default-light"><form class="form" name="delete_template" action="'.home_url().'/notification-temp-list" method="POST">';
-    $content.='<input class="btn btn-raised btn-danger delete_action" type="button" name="deletetemplate" id="deletetemplate" value="Delete Template"> <a href="'.get_home_url().'/notification_template/'.'" name="createtemplate" id="createtemplate"><input class="btn btn-raised btn-primary" type="button" value="Create Template"></a>';
+    $content='<div class="col-md-10 card card-tiles style-default-light"><form class="form" name="delete_template" action="'.home_url().'/notification-temp-list" method="POST">';
+    $content.='<a href="'.get_home_url().'/notification_template/'.'" name="createtemplate" id="createtemplate"><input class="btn btn-raised btn-primary" type="button" value="Create Template"></a> <input class="btn btn-raised btn-danger delete_action" type="button" name="deletetemplate" id="deletetemplate" value="Delete Template"> ';
     $content.='<table class="table no-margin" id="data_table"><thead><tr><th><div class="checkbox checkbox-inline checkbox-styled"><label><input type="checkbox" name="chkall" id="chkall"></label></div></th><th>Template Names</th><th>Templates</th><th>Edit</th></tr></thead><tbody>';
     
     $i=0;  

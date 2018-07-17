@@ -47,15 +47,33 @@ header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
 header("Cache-Control: private",false);';
 //$content .= "echo'$_POST['table_data']' ";
 $content.='echo"';
-$content.="<table class='table no-margin' id='myTable' ><thead><tr><th><input type='checkbox' name='chkall' id='chkall'></th><th>Date Time</th><th>Response Status</th><th>Request Name</th><th>Request Type</th><th>Room No</th></tr></thead>";
+$content.="<table class='table no-margin' id='myTable' ><thead><tr><th>Date Time</th><th>Request Name</th><th>Request Type</th><th>Room No</th></tr></thead>";
 
 $content.= "<tbody>";
 
 $i=0;
 if($data){
     foreach($data->Items as $response){
-        $content.= "<tr><td><input type='checkbox' name='chk_device".$i."' id='chk_device".$i."' class='chkall'></td><td>".$response->Date."</td><td>Success</td><td>".$response->RequestName."</td><td>".$response->RequestType."</td><td>".$response->RequestType."</td></tr>";
-        $i++;
+        $resquestname="";
+        $resquest_room_no="";
+        $req_name = explode("_@_",$response->RequestName);
+        if(isset($req_name[1]))
+            $resquestname= $req_name[1];
+        else 
+            $resquestname= $req_name[0];
+            
+        if(is_array($response->RoomNumber))
+        {
+            $str = $response->RoomNumber;
+            $resquest_room_no = $str[1];
+        }
+        else
+            $resquest_room_no = $response->RoomNumber;
+            
+        if($_POST['userid'] == $req_name[0]){    
+        $content.= "<tr><td>".$response->Date."</td><td>".$resquestname."</td><td>".$response->RequestType."</td><td>".$resquest_room_no."</td></tr>";
+                $i++;
+        }
     }
 }
 

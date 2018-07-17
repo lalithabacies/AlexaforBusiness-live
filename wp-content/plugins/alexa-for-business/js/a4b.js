@@ -1,7 +1,7 @@
 
 jQuery(document).ready(function( $ ) {
 $('#chkall').on('click',function(){
-    if($(this).is(':checked') == true){
+    if($(this).is(':checked') === true){
         $('.chkall').prop('checked',true);
     }else{
         $('.chkall').prop('checked',false);
@@ -148,7 +148,7 @@ callchk();
 
 $("#startdate").datepicker({
     numberOfMonths: 1,
-    dateFormat: 'dd/mm/yy',
+    dateFormat: 'mm/dd/yy',
     onSelect: function (selected) {
         var dt = new Date(selected);
         dt.setDate(dt.getDate() + 1);
@@ -157,7 +157,7 @@ $("#startdate").datepicker({
 });
 $("#enddate").datepicker({
     numberOfMonths: 1,
-    dateFormat: 'dd/mm/yy',
+    dateFormat: 'mm/dd/yy',
     onSelect: function (selected) {
         var dt = new Date(selected);
         dt.setDate(dt.getDate() - 1);
@@ -167,10 +167,12 @@ $("#enddate").datepicker({
 
 $("#data_table").DataTable();
 $("#data_table_response").DataTable({
-    "order": [[ 1 , "desc" ]]
+    "order": [[ 1 , "asc" ]],
+   "searching": false 
 });
+
 $("#data_table_audit").DataTable({
-    "order": [[ 1 , "desc" ]]
+    "order": [[ 1 , "asc" ]]
 });
 
 $('#downloadactions').on('change',function(){
@@ -191,6 +193,28 @@ $('#downloadactions').on('change',function(){
     } 
 });
 
+$('.downloadactions').on('click',function(){
+    sdate = $("#startdate").val();
+    edate   = $("#enddate").val();
+    userid    = $("#userid").val();
+    var sparts = sdate.split('/');
+    var startdate = sparts[1] + '/' + sparts[0] + '/' + sparts[2];
+    var eparts = edate.split('/');
+    var enddate = eparts[1] + '/' + eparts[0] + '/' + eparts[2];
+   
+    $.ajax({
+            url: "./wp-content/plugins/alexa-for-business/generate_excel.php", 
+            type: "POST",  
+            data: { 'startdate': startdate, 'enddate': enddate ,'userid':userid,'from':'response' },
+            success: function(data){
+            
+            document.location.href =('./wp-content/plugins/alexa-for-business/excel_data.php');
+    }});
+});
+
+$('#search_date').on('click',function(){
+    $('#action_for').val('search');
+});
 
 $('.js-example-basic-multiple').select2();
 
@@ -217,7 +241,7 @@ $(document).on('submit','form[name=request]',function(e){
         $("#EmailID_error").hide();
     }
     if($('#email_chk').is(':checked')== true && $('#EmailID').val()!=""){
-        if(!validateEmail($('#EmailID').val())){
+        if(!multiple_validateEmail($('#EmailID').val())){
             count++;
             $('#EmailID_error').html('Please enter a valid email address.');
             $("#EmailID_error").show();
@@ -389,6 +413,32 @@ $('#alexa_response1').bind('keypress', function(e) {
         }
 }); 
 
+$(".numberonly").keydown(function (e) {
+        // Allow: backspace, delete, tab, escape, enter and .
+        if ($.inArray(e.keyCode, [46, 8, 9, 27, 13, 110, 190]) !== -1 ||
+             // Allow: Ctrl+A, Command+A
+            (e.keyCode === 65 && (e.ctrlKey === true || e.metaKey === true)) || 
+             // Allow: home, end, left, right, down, up
+            (e.keyCode >= 35 && e.keyCode <= 40)) {
+                 // let it happen, don't do anything
+                 return;
+        }
+        // Ensure that it is a number and stop the keypress
+        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+            e.preventDefault();
+        }
+    });
+
+
+ $(document).on('click','.modelidresponseclick',function(){
+       
+       alert( $(this).data("myvalue"));
+       
+        var textval = $(this).data("myvalue")+' request name: RequestName <br> call status: callstatus <br> email status: emailstatus <br> message: messageview <br> content of the sms: messagecontent <br> sms status: smsatatus <br> message: messageview <br> content of the mail: messagecontent ';
+        
+        $("#modelidresponseview").html(textval);
+ });
+ 
 function validateEmail(sEmail) {
     var filter = /^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/;
     if (filter.test(sEmail)) {
@@ -399,6 +449,23 @@ function validateEmail(sEmail) {
     }
 }
 
+
+function multiple_validateEmail(sEmail) {
+     var emails = sEmail.split(/[,]+/); // split element by , and ;
+     var filter = /^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/;
+     
+         for (var i in emails) {
+             var value = $.trim(emails[i]);
+             if (filter.test(value)) {
+                     
+                }
+                else {
+                    return false;
+                }
+         }
+         return true;
+    }
+    
 
 /*$('#data').after('<div id="nav"></div>');
 var rowsShown = 4;

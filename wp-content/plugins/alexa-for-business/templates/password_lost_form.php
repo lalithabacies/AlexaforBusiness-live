@@ -37,7 +37,46 @@
             //$message .= network_site_url("wp-login.php?action=rp&key=$key&login=" . rawurlencode($user_login), 'login') . "&redirect_to=".urlencode(get_option('siteurl'))."\r\n";
             $message .= '<' . network_site_url("custom-reset-password?action=rp&key=$key&login=" . rawurlencode($user->user_login), 'login') . ">\r\n\r\n";
             //send email meassage
-            if (FALSE == wp_mail($user_email, sprintf(__('[%s] Password Reset'), get_option('blogname')), $message))
+            $headers = array('Content-Type: text/html; charset=UTF-8');
+            
+              $htmlmessage = '
+	<table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse;">
+		<tr style="display: grid;">
+		
+			<td width="100%" valign="top">
+				<table border="0" cellpadding="0" cellspacing="0" width="100%">
+					<tr>
+						<td style="font-size: 24px; font-weight: bold; color: #393768; padding-top: 25px; padding-bottom: 25px;">
+							Hello '.$user_login.',
+						</td>
+					</tr>
+
+					<tr>
+						<td style="padding-top: 15px; padding-bottom: 15px;">
+							Someone has asked to reset the password for the following site and username.
+						</td>
+					</tr>
+					<tr>
+						<td style="padding-top: 15px; padding-bottom: 15px;">
+							To reset your password visit the following address, otherwise just ignore this email and nothing will happen.
+						</td>
+					</tr>
+				</table>
+			</td>
+			<td width="100%" valign="top">
+				<table border="0" cellpadding="0" cellspacing="0" width="100%">
+					<tr>
+						<td align="center"  style="padding: 20px 0px">
+							<a href="'.network_site_url("custom-reset-password?action=rp&key=$key&login=" . rawurlencode($user->user_login), 'login').'" style="background: #00ADD8;border: 0;border-radius: 2px;text-decoration: none;color: #fff;padding: 10px;font-size: 18px;font-weight: 600;">Click Here</a>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+';
+
+            if (FALSE == wp_mail($user_email, sprintf(__('[%s] Password Reset'), get_option('blogname')),$htmlmessage,$headers))
             $error[] = '<p>' . __('The e-mail could not be sent.') . "<br />\n" . __('Possible reason: your host may have disabled the mail() function...') . '</p>';
         }
         if (count($error) > 0 ){

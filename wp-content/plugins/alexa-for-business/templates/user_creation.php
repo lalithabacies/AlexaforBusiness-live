@@ -4,6 +4,8 @@ if($_REQUEST['errors']){
 }
 if($_REQUEST['userid']){
     $users = get_userdata($_REQUEST['userid']);
+    $business_name = get_user_option('business_name', $users->id);
+
     $button= 'Update';
     $pwd_mandatory="";
     $action_for = "update";
@@ -17,11 +19,11 @@ if($_REQUEST['userid']){
     $readonly="";
 }
 ?>
-<section class="section-account">
+<section class="section-account" style="padding: 0;">
 
     <div class="card-body">
      <div class="row">
-      <div class="col-md-offset-3 col-md-6 card card-tiles style-default-light">
+      <div class="col-md-6 card card-tiles style-default-light">
        <br/>
        <span class="text-center text-lg text-bold text-primary"><?php echo $title; ?></span>
        <br/><br/>
@@ -37,13 +39,14 @@ if($_REQUEST['userid']){
              <label style="height: 50px;" for="email">Email *</label>
          </div>
          <div class="form-group">
-             <input type="text" class="form-control" id="first_name" name="first_name" value="<?php echo $users->first_name?>">
-             <label for="first_name">First Name</label>
+             <input type="text" class="form-control" id="first_name" name="first_name" value="<?php echo $users->first_name?>" required>
+             <label for="first_name">First Name *</label>
          </div>
          <div class="form-group">
-             <input type="text" class="form-control" id="last_name" name="last_name" value="<?php echo $users->last_name?>">
-             <label for="last_name">Last Name</label>
+             <input type="text" class="form-control" id="last_name" name="last_name" value="<?php echo $users->last_name?>" required>
+             <label for="last_name">Last Name *</label>
          </div>
+         
          <!--<div class="form-group">
              <input type="password" class="form-control" id="password" name="password" value="" >
                 <label style="height: 50px;" for="password">Password <?php echo $pwd_mandatory; ?></label>
@@ -54,7 +57,7 @@ if($_REQUEST['userid']){
             <label style="height: 50px;" for="password">Confirm Password <?php echo $pwd_mandatory; ?></label>
              <div id="errorMessage_con_password" style="display: none; color: rgb(169, 68, 66);">Please enter the same password</div>
          </div>-->
-         <!--<div class="form-group">
+         <div class="form-group">
             <?php
             $roles = array('subscriber'=>'Subscriber','editor'=>'Editor');
             $role = $users->roles[0];
@@ -68,7 +71,12 @@ if($_REQUEST['userid']){
                 ?>
             </select>
             <label for="role">Role *</label>
-        </div>-->
+        </div>
+         <div class="form-group" id="hotel_name_field" style='display:none' >
+             <input type="text" class="form-control" id="hotel_name" name="hotel_name" value="<?php echo  $business_name; ?>">
+             <label for="hotel_name">Hotel Name *</label>
+         </div>
+        
         <br/>
         <input type="hidden" name="redirect_to" value="<?php echo get_home_url().'/user-list/'?>" />
         <input type="hidden" name="action" value="user_register" />
@@ -97,7 +105,7 @@ $(document).ready(function(e) {
             e.preventDefault();
         }
         else if (!validateEmail(sEmail)) {
-            $("#errorMessage").html('Please enter a valid email address');
+            $("#errorMessage").html('Please enter a valid email address12');
             $("#errorMessage").css({'display':'block'});
             $('.email>label:after').css({'background-color': '#0aa89e'})
             return false;
@@ -223,6 +231,24 @@ $(document).ready(function(e) {
             return false;
         }
     }
+    
+    $( "#role" ).change(function() {
+         var role_val = $(this).val();
+            if(role_val == "editor")
+            {
+                 $("#hotel_name_field").show();
+            } else 
+            {
+                $("#hotel_name_field").hide(); 
+            }
+    });
+    <?php 
+    if($_REQUEST['userid']){
+        ?>
+        $( "#role" ).trigger( "change" );
+        <?php
+    }
+    ?>
 
 });
 </script>
