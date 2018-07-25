@@ -11,17 +11,19 @@ if($_REQUEST['userid']){
     $action_for = "update";
     $title = "Update User";
     $readonly = "readonly";
+    $role = $users->roles[0];
 }else{
     $button= 'Register';
     $pwd_mandatory="*";
     $action_for = "insert";
     $title = "Create User";
     $readonly="";
+    $role = 'subscriber';
 }
 ?>
-<section class="section-account" style="padding: 0;">
+<section class="section-account">
 
-    <div class="card-body">
+    <div class="card-body" style="padding-left: 0;">
      <div class="row">
       <div class="col-md-6 card card-tiles style-default-light">
        <br/>
@@ -29,10 +31,10 @@ if($_REQUEST['userid']){
        <br/><br/>
        <!--<form class="form floating-label" action="../../html/dashboards/dashboard.html" accept-charset="utf-8" method="post">-->
         <form id="registerform" class="form floating-label form-validate" name="registerform" action="<?php echo admin_url('admin-post.php') ?>" method="post">
-         <!--<div class="form-group">
-             <input type="text" class="form-control" id="user_login" name="user_login" value="<?php echo $users->user_login?>" required>
+         <div class="form-group">
+             <input type="text" class="form-control" id="user_login" name="user_login" value="<?php echo $users->user_login?>" <?php echo $readonly; ?> required>
              <label for="user_login">Username *</label>
-         </div>-->
+         </div>
          <div class="form-group">
              <input type="text" class="form-control" id="email" name="email" value="<?php echo $users->user_email?>" <?php echo $readonly; ?>>
              <span id="errorMessage" >Please enter a valid email address</span>
@@ -59,23 +61,75 @@ if($_REQUEST['userid']){
          </div>-->
          <div class="form-group">
             <?php
-            $roles = array('subscriber'=>'Subscriber','editor'=>'Editor');
-            $role = $users->roles[0];
+            $user = wp_get_current_user();
+            $current_user_role = $user->roles[0];
+            $roles = wp_roles()->get_names();
+            $busi_=$busi_sel="";
+            $business_names = array();
+            
+            if($current_user_role == 'administrator'){
+                unset($roles['administrator']);
+                $busi_="";
+                $busi_sel="none";
+                
+                $users_business = get_users(array(
+                    'meta_key'     => 'business_name',
+                ));
+                
+                foreach($users_business as $user){
+                    if(get_user_meta($user->ID,'business_name',true)){
+                        $business_names[$user->ID]=get_user_meta($user->ID,'business_name',true);
+                    }
+                }
+            
+            }else if($current_user_role == 'subscriber'){
+                unset($roles['administrator']);
+                unset($roles['subscriber']);
+                $busi_="none";
+                $busi_sel="";
+                
+                if(get_user_meta(get_current_user_id(),'business_name',true)){
+                    $business_names[get_current_user_id()]=get_user_meta(get_current_user_id(),'business_name',true);
+                }
+            }
             ?>
             <select name="role" class="form-control"  id="role">
                 <?php
                 foreach($roles as $key=>$_role){
                     $_sel = ($key == $role)?"selected":"";
-                    print"<option value='".$key."' ".$_sel.">".$_role."</option>";
+                    $_dis = (!empty($_REQUEST['userid']) && $key != $role)?"disabled":"";
+                    print"<option value='".$key."' ".$_sel." ".$_dis.">".$_role."</option>";
                 }
                 ?>
             </select>
             <label for="role">Role *</label>
         </div>
-         <div class="form-group" id="hotel_name_field" style='display:none' >
-             <input type="text" class="form-control" id="hotel_name" name="hotel_name" value="<?php echo  $business_name; ?>">
-             <label for="hotel_name">Hotel Name *</label>
-         </div>
+        <div class="form-group hotel_field" id="hotel_name_field" style='display:<?php echo $busi_?>' >
+            <input type="text" class="form-control" id="hotel_name" name="hotel_name" required value="<?php echo  $business_name; ?>" <?php echo $readonly; ?>>
+            <label for="hotel_name">Business Name *</label>
+            <input type="hidden" class="form-control" id="old_hotel_name" name="old_hotel_name" value="<?php echo  $business_name; ?>">
+        </div>
+        <div class="form-group" id="hotel_names_field" style='display:<?php echo $busi_sel?>' >
+            <select class="form-control" id="hotel_names" name="hotel_names">
+                <?php
+                foreach($business_names as $userid=>$business_name){
+                    $_sel = trim(get_the_author_meta( 'business_name_belongs', $_REQUEST['userid'])) == trim($business_name)?"selected":"";
+                    ?>
+                    <option value="<?php echo $userid."_@_".$business_name?>" <?=$_sel?>><?php echo $business_name?></option>
+                    <?php
+                }
+                ?>
+            </select>    
+            <label for="hotel_name">Hotel Name *</label>
+        </div>
+        <div class="form-group hotel_field" style='display:<?php echo $busi_?>' >
+            <textarea class="form-control" name="business_address" id="business_address"><?php echo trim(get_user_meta($_REQUEST['userid'],'business_address',true)); ?></textarea>
+            <label for="business_address">Business Address</label>
+        </div>
+        <div class="form-group hotel_field" style='display:<?php echo $busi_?>' >
+            <input type="number" class="form-control" id="business_phone" name="business_phone" value="<?php echo trim(get_the_author_meta( 'business_phone', $_REQUEST['userid'])); ?>">
+            <label for="business_phone">Business Phone</label>
+        </div>
         
         <br/>
         <input type="hidden" name="redirect_to" value="<?php echo get_home_url().'/user-list/'?>" />
@@ -234,12 +288,16 @@ $(document).ready(function(e) {
     
     $( "#role" ).change(function() {
          var role_val = $(this).val();
-            if(role_val == "editor")
+            if(role_val == "subscriber")
             {
-                 $("#hotel_name_field").show();
-            } else 
+                //$("#hotel_name_field").show();
+                $(".hotel_field").show();
+                $("#hotel_names_field").hide();
+            }
+            else if(role_val == "editor")
             {
-                $("#hotel_name_field").hide(); 
+                $(".hotel_field").hide();
+                $("#hotel_names_field").show();
             }
     });
     <?php 

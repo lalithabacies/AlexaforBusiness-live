@@ -10,9 +10,9 @@ $users = get_userdata(get_current_user_id());
 ?>
 <section class="section-account">
 
-    <div class="card-body">
+    <div class="card-body" style="padding-left: 0px;">
      <div class="row">
-      <div class="col-md-offset-3 col-md-6 card card-tiles style-default-light">
+      <div class="col-md-6 card card-tiles style-default-light">
        <br/>
        <span class="text-center text-lg text-bold text-primary">Update Profile</span>
        <br/><br/>

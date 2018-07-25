@@ -89,7 +89,7 @@ function alexa_script() {
 
 function get_username(){
     $current_user = wp_get_current_user();
-    if($current_user->roles[0] == 'administrator'){
+    if($current_user->roles[0] == 'subscriber'){
         $iam_username = $current_user->user_email;
     }else{
         $users = get_user_by('ID',get_userid());
@@ -100,7 +100,7 @@ function get_username(){
 
 function get_userid(){
     $current_user = wp_get_current_user();
-    if($current_user->roles[0] == 'administrator'){
+    if($current_user->roles[0] == 'subscriber'){
         $userid = $current_user->ID;
     }else{
         $args=array(
@@ -963,11 +963,11 @@ function create_request(){
     $Form_data['username']=get_username();
     $Form_data['userid']  =get_userid();
     if($_POST['action_for'] == 'update'){
-         $Form_data['date']  = $_POST['updatedate'];
+         $Form_data['last_modified_date']  = $_POST['updatedate'];
         $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/requests_update',json_encode($Form_data)));
     }else{
        // echo json_encode($Form_data);die();
-       $Form_data['date']  = date("Y-m-d H:i:s");
+       $Form_data['last_modified_date']  = date("Y-m-d H:i:s");
        $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/requests_insert',json_encode($Form_data)));
     }
     if($data->error){
@@ -1014,7 +1014,7 @@ function create_request(){
         $alexa_response1= $Conversation[1][0];
         //$readonly     = "readonly";
         $action_for   = "update";
-        $updatedate    = $data[0]->date;
+        $updatedate    = $data[0]->last_modified_date;
         $email_chk_ = !empty($EmailID)?"checked":"";
         $text_chk_  = !empty($TextNumber)?"checked":"";
         $call_chk_  = !empty($CallNumber)?"checked":"";
@@ -1120,7 +1120,7 @@ function create_request(){
     echo'</select><label for="notification_Temp ">Notification Template</label></div>';
     echo '<p id="notification_Temp_error" style="color:rgb(169, 68, 66);display:none;">This field is required.</p>';
     echo '<div class="notification" style="display:'.$noti_display.';"><label for="alexa_response ">Notification</label>
-    <table class="table no-margin"><tr><td><div class="checkbox checkbox-inline checkbox-styled"><label><input type="checkbox" name="email_chk" id="email_chk" value="email" '.$email_chk_.'></label></div></td><td>Email:</td><td><input class="form-control" type="textbox" name="EmailID" id="EmailID" value="'.$EmailID.'" '.$email_dis_.'><p id="EmailID_error" style="color:rgb(169, 68, 66);display:none;">This field is required.</p><p>Multiple email addresses separated by comma (,)</p></td></tr>
+    <table class="table no-margin"><tr><td><div class="checkbox checkbox-inline checkbox-styled"><label><input type="checkbox" name="email_chk" id="email_chk" value="email" '.$email_chk_.'></label></div></td><td>Email:</td><td><input class="form-control" type="textbox" name="EmailID" id="EmailID" value="'.$EmailID.'" '.$email_dis_.'><p id="EmailID_error" style="color:rgb(169, 68, 66);display:none;">This field is required.</p><p>Multiple email addresses separated by semicolon (;)</p></td></tr>
     <tr><td><div class="checkbox checkbox-inline checkbox-styled"><label><input type="checkbox" name="text_chk" id="text_chk" value="text" '.$text_chk_.'></td><td>Text:</td><td><input class="form-control" type="text" name="TextNumber" id="TextNumber" value="'.$TextNumber.'" '.$text_dis_.'></label></div><p id="TextNumber_error" style="color:rgb(169, 68, 66);display:none;">This field is required.</p></td></tr>
     <tr><td><div class="checkbox checkbox-inline checkbox-styled"><label><input type="checkbox" name="call_chk" id="call_chk" value="call" '.$call_chk_.'></label></div></td><td>Call:</td><td><input class="form-control numberonly" type="text" name="CallNumber" id="CallNumber" value="'.$CallNumber.'" '.$call_dis_.'><p id="CallNumber_error" style="color:rgb(169, 68, 66);display:none;">This field is required.</p></td></tr>
     <tr><td colspan="3"><div style="color:#a94442;display:none;" id="noti_req">Any one Notification is required.</div></td></tr>
@@ -1437,7 +1437,7 @@ function login(){
 }
 
 
-add_action( 'admin_init', 'redirect_non_admin_users' );
+//add_action( 'admin_init', 'redirect_non_admin_users' );
 /**
  * Redirect non-admin users to home page
  *
@@ -1638,7 +1638,7 @@ function register_user( $email, $first_name, $last_name ,$hotel_name ) {
  
     $user_id = wp_insert_user( $user_data );
     update_user_meta($user_id,'business_name',$hotel_name);
-    wp_new_user_notification_custom( $user_id, $password );
+    wp_new_user_notification_custom( $user_id, null );
  
     return $user_id;
 }
@@ -1799,24 +1799,40 @@ add_action('admin_post_user_register','user_register');
 function user_register(){
    
         $display_name = ($_POST['first_name'])?$_POST['first_name']:$_POST['email'];
-        
         if(!$_POST['userid']){
             $userdata = array(
-                'user_login'  =>  $_POST['email'],
+                'user_login'  =>  $_POST['user_login'],
                 'user_pass'   =>  $_POST['password'],  
-                'display_name'=>   $_POST['hotel_name'],
+                'display_name'=>  $_POST['hotel_name'],
                 'first_name'  =>  $_POST['first_name'],  
                 'last_name'   =>  $_POST['last_name'],  
                 'user_email'  =>  $_POST['email'],  
-                'role'      =>  $_POST['role']  
+                'role'        =>  $_POST['role']  
                 
             );
-            $hotel_name = $_POST['hotel_name'];
             $user_id = wp_insert_user( $userdata ) ;
             if($user_id){
-                update_user_meta($user_id,'user_belongs_to',get_current_user_id());
-                update_user_meta($user_id,'business_name',$hotel_name);
-                wp_new_user_notification_custom($user_id,$_POST['password']);
+                if($_POST['role'] == 'subscriber'){
+                    update_user_meta($user_id,'business_name',$_POST['hotel_name']);
+                    update_user_meta( $user_id, 'business_address', $_POST['business_address']);
+                    update_user_meta( $user_id, 'business_phone', $_POST['business_phone']);
+                    
+                    $IAM_User=array();
+                    $IAM_User['Path']       = $_POST['hotel_name'];
+                    //$IAM_User['UserName'] = $_POST['email'];
+                    $IAM_User['UserName']   = $_POST['hotel_name'];
+                    
+                    if($_POST['hotel_name']){
+                        doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/add_new_user',json_encode($IAM_User));
+                    }
+                }else if($_POST['role'] == 'editor'){
+                    $hotel_names = explode("_@_",$_POST['hotel_names']);
+                    //update_user_meta($user_id,'user_belongs_to',get_current_user_id());
+                    update_user_meta($user_id,'user_belongs_to',$hotel_names[0]);
+                    update_user_meta($user_id,'business_name_belongs',$hotel_names[1]);
+                }
+                wp_new_user_notification_custom($user_id,null,'both');
+                //wp_new_user_notification($user_id, null, 'both');
             }
             if ( is_wp_error( $user_id  ) ) {
                 $e = $user_id->get_error_message();
@@ -1831,21 +1847,44 @@ function user_register(){
             
             $user_id = wp_update_user( array(
                 'ID' => $id,
-                'user_login'  => $_POST['email'],
+                'user_login'  => $_POST['user_login'],
                 'user_email'  => $_POST['email'],
                 'user_pass'   => $password,  
                 'display_name'=> $_POST['hotel_name'],
                 'first_name'  => $_POST['first_name'],  
                 'last_name'   => $_POST['last_name'], 
             ));
-            
-             $hotel_name = $_POST['hotel_name'];
              
             if ( is_wp_error( $user_id  ) ) {
             $e = $user_id->get_error_message();
             wp_redirect(add_query_arg( array('errors'=>str_replace(" ","%20",$e),'post'=>$userdata), home_url().'/user-creation?userid='.$id ));
             }else{
-                update_user_meta($user_id,'business_name',$hotel_name);
+                if($_POST['role'] == 'subscriber'){
+                    update_user_meta($user_id,'business_name',$_POST['hotel_name']);
+                    update_user_meta( $user_id, 'business_address', $_POST['business_address']);
+                    update_user_meta( $user_id, 'business_phone', $_POST['business_phone']);
+                    
+                    /*$IAM_User=array();
+                    $IAM_User['Path']       = $_POST['business_name'];
+                    //$IAM_User['UserName']   = $_POST['email'];
+                    $IAM_User['UserName']   = $_POST['business_name'];
+                    
+                    if($_POST['business_name']){
+                        doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/add_new_user',json_encode($IAM_User));
+                    }*/
+                    if($_POST['hotel_name'] != $_POST['old_hotel_name']){
+                        $data = array();
+                        $data['UserName']   =$_POST['old_hotel_name'];
+                        $data['NewPath']    =$_POST['hotel_name'];
+                        $data['NewUserName']=$_POST['hotel_name'];
+                        doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/update_users',json_encode($data));
+                    }
+                    
+                }else if($_POST['role'] == 'editor'){
+                    $hotel_names = explode("_@_",$_POST['hotel_names']);
+                    update_user_meta($user_id,'user_belongs_to',$hotel_names[0]);
+                    update_user_meta($user_id,'business_name_belongs',$hotel_names[1]);
+                }
                 //wp_redirect( esc_url( add_query_arg( 'success', '1', home_url().'/register' ) ) );
                 wp_redirect( $_POST['redirect_to'].'?updated=1' );
             }
@@ -1863,27 +1902,37 @@ function users_list(){
     else if($_REQUEST['updated'] == 1){
         echo '<div class="alert alert-callout alert-success col-md-offset-3 col-md-6">User has been Updated successfully.</div>';
     }
-    $args=array(
-        'meta_key'=>'user_belongs_to',
-        'meta_value'=>get_userid()
+    $current_user = wp_get_current_user();
+    if($current_user->roles[0] == 'administrator'){
+        $args=array();
+    }else{
+        $args=array(
+            'meta_key'=>'user_belongs_to',
+            'meta_value'=>get_userid()
         );
+    }
     $users = get_users($args);
     //print_r($users);
     $content='<div class="col-md-10 card card-tiles style-default-light"><form class="form" name="user_list" action="'.admin_url('admin-post.php').'" method="POST">';
     $content.=' <a href="'.get_home_url().'/user-creation/'.'" name="createuser" id="createuser"><input class="btn btn-raised btn-primary" type="button" value="Create User"></a> <input class="btn btn-raised btn-danger delete_action" type="button" name="deleteusers" id="deleteusers" value="Delete Users">';
-    $content.='<table class="table no-margin"><tr><th><div class="checkbox checkbox-inline checkbox-styled"><label><input type="checkbox" name="chkall" id="chkall"></label></div></th><th>User Name</th><th>E-Mail</th><th>Role</th><th>Edit</th></tr>';
+    $content.='<table class="table no-margin" id="data_table_userlist"><thead><tr><th><div class="checkbox checkbox-inline checkbox-styled"><label><input type="checkbox" name="chkall" id="chkall"></label></div></th><th>User Name</th><th>E-Mail</th><th>Role</th><th>Edit</th></tr></thead><tbody>';
     
     $i=0;  
     if(count($users)){
         foreach($users as $user){
             if($user->roles[0]!='administrator'){
-            $content.='<tr><td><div class="checkbox checkbox-inline checkbox-styled"><label><input type="checkbox" name="chk_user'.$i.'" class="chkall"></label></div><input type="hidden" name="user_id'.$i.'" value="'.$user->ID.'"></td><td>'.$user->user_login.'</td><td>'.$user->user_email.'</td><td>'.$user->roles[0].'</td><td><a href="'.get_home_url().'/user-creation?userid='.$user->ID.'" name="edit_room'.$i.'" id="edit_room'.$i.'" class="edit_rooms">Edit</a></td></tr>';
+                if($user->roles[0] == 'editor'){
+                    $role = 'Users';
+                }else if($user->roles[0] == 'subscriber'){
+                    $role = 'Administrator';
+                }
+            $content.='<tr><td><div class="checkbox checkbox-inline checkbox-styled"><label><input type="checkbox" name="chk_user'.$i.'" class="chkall"><span></span></label></div><input type="hidden" name="user_id'.$i.'" value="'.$user->ID.'"></td><td>'.$user->user_login.'</td><td>'.$user->user_email.'</td><td>'.$role.'</td><td><a href="'.get_home_url().'/user-creation?userid='.$user->ID.'" name="edit_room'.$i.'" id="edit_room'.$i.'" class="edit_rooms">Edit</a></td></tr>';
             $i++;
             }
         }
     }
     
-    $content.='<tr></tr></table>';
+    $content.='</tbody></table>';
     $content.='<input type="hidden" name="action" value="deleteusers"><input type="hidden" name="no_of_users" value="'.$i.'"></form></div>';
     return $content;
 }
@@ -2151,10 +2200,12 @@ function wp_new_user_notification_custom( $user_id, $deprecated = null, $notify 
 
 	/* translators: %s: user login */
 	$message = sprintf(__('Username: %s'), $user->user_login) . "\r\n\r\n";
-	$message .= __('To set your password, visit the following address:') . "\r\n\r\n";
+	//$message .= __('To set your password, visit the following address:') . "\r\n\r\n";
 	//$message .= '<' . network_site_url("wp-login.php?action=rp&key=$key&login=" . rawurlencode($user->user_login), 'login') . ">\r\n\r\n";
 	
-	$message .= '<' . network_site_url("custom-reset-password?action=rp&key=$key&login=" . rawurlencode($user->user_login), 'login') . ">\r\n\r\n";
+	$message .= __('To set your password, click <a href="'.network_site_url("wp-login.php?action=rp&key=$key&login=" . rawurlencode($user->user_login), 'login').'">here</a>') . "\r\n\r\n";
+	
+	//$message .= '<' . network_site_url("custom-reset-password?action=rp&key=$key&login=" . rawurlencode($user->user_login), 'login') . ">\r\n\r\n";
 
 	$message .= wp_login_url() . "\r\n";
 
@@ -2232,40 +2283,270 @@ add_action( 'show_user_profile', 'extra_user_profile_fields' );
 add_action( 'edit_user_profile', 'extra_user_profile_fields' );
 add_action( 'user_new_form', 'extra_user_profile_fields' );
 
-function extra_user_profile_fields( $user ) { ?>
+function extra_user_profile_fields( $user ) { 
+    $role = get_user_by('id',$_REQUEST['user_id'])->roles[0];
+    if($_REQUST['business_name']){
+        $business_name_inp_val = $_REQUST['business_name'];
+    }else{
+        $business_name_inp_val = esc_attr( get_the_author_meta( 'business_name', $user->ID ) );
+    }
+    
+    ?>
+    <div class="profile_information" style="display:<?php echo ($role=='administrator')?"none":""; ?>">
     <h3><?php _e("Extra profile information", "blank"); ?></h3>
-
+    
     <table class="form-table">
-    <tr class="form-field form-required">
+    <tr class="form-field form-required business_name_inp" style="display:<?php echo $role?(($role=='subscriber')?"":"none"):""; ?>">
         <th><label for="business_name"><?php _e("Business Name"); ?><span class="description">(required)</span></label></label></th>
         <td>
-            <input type="text" name="business_name" id="business_name" value="<?php echo esc_attr( get_the_author_meta( 'business_name', $user->ID ) ); ?>" class="regular-text" /><br />
+            <input type="text" name="business_name" id="business_name" value="<?php echo $business_name_inp_val; ?>" class="regular-text" /><br />
             <span class="description"><?php _e("Please enter your Business Name."); ?></span>
+            <input type="hidden" name="old_business_name" id="old_business_name" value="<?php echo esc_attr( get_the_author_meta( 'business_name', $user->ID ) ); ?>">
+        </td>
+    </tr>
+    <?php
+            $business_names = array();
+            $business_name = get_the_author_meta( 'business_name', $user->ID );
+            $users = get_users(array(
+                'meta_key'     => 'business_name',
+            ));
+            
+            foreach($users as $user){
+                if(get_user_meta($user->ID,'business_name',true)){
+                    $business_names[$user->ID]=get_user_meta($user->ID,'business_name',true);
+                }
+            }
+            ?>
+    <tr class="form-field business_name_sel" style="display:<?php echo $role?(($role=='editor')?"":"none"):"none"; ?>">
+        <th><label for="business_name"><?php _e("Business Name"); ?><span class="description">(required)</span></label></label></th>
+        <td>
+            <select name="business_names" id="business_names" class="regular-text" />
+            <option value=""></option>
+            <?php
+            foreach($business_names as $userid=>$business_name){
+                $_sel = trim(get_the_author_meta( 'business_name_belongs', $_REQUEST['user_id'])) == trim($business_name)?"selected":"";
+                ?>
+                <option value="<?php echo $userid."_@_".$business_name?>" <?=$_sel?>><?php echo $business_name?></option>
+                <?php
+            }
+            ?>
+            </select><br />
+            <span class="description"><?php _e("Please select your Business Name."); ?></span>
+        </td>
+    </tr>
+    
+    <tr class="form-field business_name_inp" style="display:<?php echo $role?(($role=='subscriber')?"":"none"):""; ?>">
+        <th><label for="business_address"><?php _e("Business Address"); ?></label></th>
+        <td>
+            <textarea name="business_address" id="business_address"><?php
+            echo trim(get_the_author_meta( 'business_address', $_REQUEST['user_id']))
+            ?></textarea>
+        </td>
+    </tr>
+    <tr class="form-field business_name_inp" style="display:<?php echo $role?(($role=='subscriber')?"":"none"):""; ?>">
+        <th><label for="business_phone"><?php _e("Business Phone"); ?></label></th>
+        <td>
+            <input type="text" name="business_phone" id="business_phone" class="regular-text" value="<?php echo get_the_author_meta( 'business_phone', $_REQUEST['user_id'])?>"/>
         </td>
     </tr>
     </table>
+    <script>
+    jQuery(document).ready(function( $ ) {
+    $(document).on('change','#role',function(){
+        if($(this).val() == 'subscriber'){
+            $('.profile_information').show();
+            $('.business_name_inp').show();
+            $('.business_name_sel').hide();
+        }else if($(this).val() == 'editor'){
+            $('.profile_information').show();
+            $('.business_name_inp').hide();
+            $('.business_name_sel').show();
+            $('.business_name_sel').addClass('form-required');
+        }else{
+            $('.profile_information').hide();
+        }
+    });
+    });
+    </script>
+    </div>
 <?php }
+                    
+add_action( 'user_profile_update_errors', 'crf_user_profile_update_errors', 10, 3 );
+function crf_user_profile_update_errors( $errors, $update, $user ) {
+    
+    if(trim($_POST['role']) == 'subscriber'){
+    	if ( empty( $_POST['business_name'] ) ) {
+    		$errors->add( 'business_name_error', __( '<strong>ERROR</strong>: Please enter the business name.', 'crf' ) );
+    	}else if(!empty( $_POST['business_name'] )){
+    	    if (preg_match('/[^a-z_\-+=,.@0-9]/i', $_POST['business_name'])) {
+                $msg = "Invalid Business name. Business names can contain alphanumeric characters, or any of the following: _+=,.@-";
+                $errors->add( 'business_name_error', __( '<strong>ERROR</strong>: '.$msg.'.', 'crf' ) );
+            }else{
+                if($_POST['business_name']!=$_POST['old_business_name']){
+                    $users = get_users(array(
+                        'meta_key'     => 'business_name',
+                        'meta_value'  => $_POST['business_name']
+                    ));
+                    if(!empty($users) && $_POST['business_name']){
+                        $errors->add( 'business_name_error', __( '<strong>ERROR</strong>: The Business Name is already used.', 'crf' ) );
+                    }
+                }
+            }
+    	}
+    }else if(trim($_POST['role']) == 'editor'){
+    	if ( empty( $_POST['business_names'] ) ) {
+    		$errors->add( 'business_name_error', __( '<strong>ERROR</strong>: Please select the business name.', 'crf' ) );
+    	}
+    }
+    
+    if($update){
+        add_action( 'personal_options_update', 'save_extra_user_profile_fields' );
+        add_action( 'edit_user_profile_update', 'save_extra_user_profile_fields' );
+        add_action( 'profile_update', 'save_extra_user_profile_fields');
+    }
+}
 
-
-add_action( 'personal_options_update', 'save_extra_user_profile_fields' );
-add_action( 'edit_user_profile_update', 'save_extra_user_profile_fields' );
-add_action( 'user_register', 'save_extra_user_profile_fields');
-add_action( 'profile_update', 'save_extra_user_profile_fields');
+add_action( 'user_register', 'save_extra_user_profile_fields_new');
+function save_extra_user_profile_fields_new( $user_id ) {
+    if ( !current_user_can( 'edit_user', $user_id ) ) { 
+        return false; 
+    }
+    if($_POST['role'] == 'subscriber'){
+        $business_name = $_POST['business_name'];
+        update_user_meta( $user_id, 'business_name', $business_name );
+        update_user_meta( $user_id, 'business_address', $_POST['business_address']);
+        update_user_meta( $user_id, 'business_phone', $_POST['business_phone']);
+        
+    }else if($_POST['role'] == 'editor'){
+        $business_names = explode("_@_",$_POST['business_names']);
+        update_user_meta( $user_id, 'business_name_belongs', $business_names[1] );
+        //update_user_meta( $user_id, 'business_address', $_POST['business_address']);
+        //update_user_meta( $user_id, 'business_phone', $_POST['business_phone']);   
+        update_user_meta( $user_id, 'user_belongs_to', $business_names[0]);
+    }
+    
+    
+    $IAM_User=array();
+    $IAM_User['Path']       = $_POST['business_name'];
+    //$IAM_User['UserName']   = $_POST['email'];
+    $IAM_User['UserName']   = $_POST['business_name'];
+    
+    if($_POST['business_name']){
+        doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/add_new_user',json_encode($IAM_User));
+    }
+}
 
 
 function save_extra_user_profile_fields( $user_id ) {
     if ( !current_user_can( 'edit_user', $user_id ) ) { 
         return false; 
     }
-    update_user_meta( $user_id, 'business_name', $_POST['business_name'] );
-    
-    $IAM_User=array();
-    $IAM_User['Path']       = $_POST['business_name'];
-    $IAM_User['UserName']   = $_POST['email'];
-    
-    doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/add_new_user',json_encode($IAM_User));
-    
+    if($_POST['role'] == 'subscriber'){
+        $business_name = $_POST['business_name'];
+        update_user_meta( $user_id, 'business_name', $business_name );
+        update_user_meta( $user_id, 'business_address', $_POST['business_address']);
+        update_user_meta( $user_id, 'business_phone', $_POST['business_phone']);
+        
+        if($_POST['business_name']!=$_POST['old_business_name']){
+            $data = array();
+            $data['UserName']   =$_POST['old_business_name'];
+            $data['NewPath']    =$_POST['business_name'];
+            $data['NewUserName']=$_POST['business_name'];
+            doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/update_users',json_encode($data));
+        }
+        
+    }else if($_POST['role'] == 'editor'){
+        $business_names = explode("_@_",$_POST['business_names']);
+        $business_name = $business_names[1];
+                    
+        update_user_meta( $user_id, 'business_name_belongs', $business_name );
+        //update_user_meta( $user_id, 'business_address', $_POST['business_address']);
+        //update_user_meta( $user_id, 'business_phone', $_POST['business_phone']);        
+        update_user_meta( $user_id, 'user_belongs_to', $business_names[0]);
+        
+    }
 }
+
+add_action('manage_users_columns','kjl_modify_user_columns');
+function kjl_modify_user_columns($column_headers) {
+    $column_headers['business_name'] = 'Business Name';
+    return $column_headers;
+}
+
+add_action('manage_users_custom_column', 'kjl_user_posts_count_column_content', 10, 3);
+function kjl_user_posts_count_column_content($value, $column_name, $user_id) {
+    $user = get_userdata( $user_id );
+    if ( 'business_name' == $column_name ) {
+        if(get_user_by('id',$user_id)->roles[0] == 'subscriber'){
+            return get_user_meta($user_id,'business_name',true);
+        }else if(get_user_by('id',$user_id)->roles[0] == 'editor'){
+            return get_user_meta($user_id,'business_name_belongs',true);
+        }
+    }
+    return $value;
+}
+
+/**
+* remove the register link from the wp-login.php script
+*/
+add_filter('option_users_can_register', function($value) {
+$script = basename(parse_url($_SERVER['SCRIPT_NAME'], PHP_URL_PATH));
+
+if ($script == 'wp-login.php') {
+$value = false;
+}
+
+return $value;
+});
+
+
+function wpse_custom_retrieve_password_message( $message, $key ) {
+    $errors = new WP_Error();
+
+	if ( empty( $_POST['user_login'] ) || ! is_string( $_POST['user_login'] ) ) {
+		$errors->add('empty_username', __('<strong>ERROR</strong>: Enter a username or email address.'));
+	} elseif ( strpos( $_POST['user_login'], '@' ) ) {
+		$user_data = get_user_by( 'email', trim( wp_unslash( $_POST['user_login'] ) ) );
+		if ( empty( $user_data ) )
+			$errors->add('invalid_email', __('<strong>ERROR</strong>: There is no user registered with that email address.'));
+	} else {
+		$login = trim($_POST['user_login']);
+		$user_data = get_user_by('login', $login);
+	}
+	
+    $user_login = $user_data->user_login;
+	$user_email = $user_data->user_email;
+	$key = get_password_reset_key( $user_data );
+	
+    if ( is_multisite() ) {
+		$site_name = get_network()->site_name;
+	} else {
+		/*
+		 * The blogname option is escaped with esc_html on the way into the database
+		 * in sanitize_option we want to reverse this for the plain text arena of emails.
+		 */
+		$site_name = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
+	}
+	
+    $message = __( 'Someone has requested a password reset for the following account:' ) . "\r\n\r\n";
+	/* translators: %s: site name */
+	$message .= sprintf( __( 'Site Name: %s'), $site_name ) . "\r\n\r\n";
+	/* translators: %s: user login */
+	$message .= sprintf( __( 'Username: %s'), $user_login ) . "\r\n\r\n";
+	$message .= __( 'If this was a mistake, just ignore this email and nothing will happen.' ) . "\r\n\r\n";
+	$message .= __( 'To reset your password, visit the following address:' ) . "\r\n\r\n";
+	//$message .= '<' . network_site_url( "wp-login.php?action=rp&key=$key&login=" . rawurlencode( $user_login ), 'login' ) . ">\r\n";
+	
+	//$message .= __( 'To reset your password, click <a href="'.network_site_url( "wp-login.php?action=rp&key=$key&login=" . rawurlencode( $user_login ), 'login' ).'">here</a>' ) . "\r\n\r\n";
+	//$message .= __('To reset your password, click <a target="_blank" href="'.network_site_url("wp-login.php?action=rp&key=$key&login=" . rawurlencode($user->user_login), 'login').'">here</a>') . "\r\n\r\n";
+    //$message .= 'url : '.network_site_url("wp-login.php?action=rp&key=$key&login=" . rawurlencode($user_login));
+    
+    
+    $message .= '<' . network_site_url("custom-reset-password?action=rp&key=$key&login=" . rawurlencode($user_login), 'login') . ">\r\n\r\n";
+    return $message;
+}
+add_filter( 'retrieve_password_message', 'wpse_custom_retrieve_password_message', 10, 2 );
+
 
 /**
  * End of Plugin

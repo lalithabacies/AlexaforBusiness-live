@@ -175,40 +175,48 @@ $("#data_table_audit").DataTable({
     "order": [[ 1 , "asc" ]]
 });
 
-$('#downloadactions').on('change',function(){
-    if($(this).val() == "download")
-    {
-        startdate = $("#startdate").val();
-        enddate = $("#enddate").val();
-
-        $.ajax({
-                url: "../wp-content/plugins/alexa-for-business/generate_excel.php", 
-                type: "POST",  
-                data: { 'startdate': startdate, 'enddate': enddate  },
-                success: function(data){
-                
-                document.location.href =('../wp-content/plugins/alexa-for-business/excel_data.php');
-        }});
-
-    } 
-});
+$("#data_table_userlist").DataTable();
 
 $('.downloadactions').on('click',function(){
+    var str = window.location.href;
+    var res = "";
+    var form = "";
+    if (str.indexOf("audit_log") >= 0)
+    {
+       res = str.split("audit_log");
+       form = "audit_log";
+    }
+    else if (str.indexOf("responses") >= 0)
+    {
+       res = str.split("responses");
+        form = "responses";
+    }
+    
     sdate = $("#startdate").val();
     edate   = $("#enddate").val();
     userid    = $("#userid").val();
+    var startdate = "";
+    var enddate = "";
+    if(sdate !=="")
+    {
     var sparts = sdate.split('/');
-    var startdate = sparts[1] + '/' + sparts[0] + '/' + sparts[2];
-    var eparts = edate.split('/');
-    var enddate = eparts[1] + '/' + eparts[0] + '/' + eparts[2];
+    startdate = sparts[1] + '/' + sparts[0] + '/' + sparts[2];
+    }
+    
+    if(edate !=="")
+    {
+     var eparts = edate.split('/');
+     enddate = eparts[1] + '/' + eparts[0] + '/' + eparts[2];
+    }
+    
    
     $.ajax({
-            url: "./wp-content/plugins/alexa-for-business/generate_excel.php", 
+            url: res[0]+"/wp-content/plugins/alexa-for-business/generate_excel.php", 
             type: "POST",  
-            data: { 'startdate': startdate, 'enddate': enddate ,'userid':userid,'from':'response' },
+            data: { 'startdate': startdate, 'enddate': enddate ,'userid':userid,'from':form },
             success: function(data){
             
-            document.location.href =('./wp-content/plugins/alexa-for-business/excel_data.php');
+            document.location.href =(res[0]+'/wp-content/plugins/alexa-for-business/excel_data.php');
     }});
 });
 

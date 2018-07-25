@@ -26,9 +26,9 @@ function doCurl_POST($end_url,$params)
     }
 }	
 
-if(($_POST['startdate'] !="") && ($_POST['enddate'] != ""))
+if(!empty($_POST['startdate']) && !empty( $_POST['enddate']))
 {
-    echo $_POST['startdate'];
+  
     $startdate = $_POST['startdate'];
     $enddate = $_POST['enddate'];		
     $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/scan_response',json_encode(array('startdate'=>$startdate,'enddate'=>$enddate))));
@@ -47,8 +47,11 @@ header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
 header("Cache-Control: private",false);';
 //$content .= "echo'$_POST['table_data']' ";
 $content.='echo"';
-$content.="<table class='table no-margin' id='myTable' ><thead><tr><th>Date Time</th><th>Request Name</th><th>Request Type</th><th>Room No</th></tr></thead>";
-
+if($_POST['from'] == "audit_log")
+    $content.="<table class='table no-margin' id='myTable' ><thead><tr><th>Date Time</th><th>Request Name</th><th>Request status</th><th>Request Type</th><th>Room No</th></tr></thead>";
+else if($_POST['from'] == "responses")
+    $content.="<table class='table no-margin' id='myTable' ><thead><tr><th>Date Time</th><th>Request Name</th><th>Request Type</th><th>Room No</th></tr></thead>";
+    
 $content.= "<tbody>";
 
 $i=0;
@@ -70,8 +73,12 @@ if($data){
         else
             $resquest_room_no = $response->RoomNumber;
             
-        if($_POST['userid'] == $req_name[0]){    
-        $content.= "<tr><td>".$response->Date."</td><td>".$resquestname."</td><td>".$response->RequestType."</td><td>".$resquest_room_no."</td></tr>";
+        if($_POST['userid'] == $req_name[0]){
+            if(($_POST['from'] == "audit_log") && (!empty($response->RequestStatus)))
+                  $content.= "<tr><td>".$response->Date."</td><td>".$resquestname."</td><td>".$response->RequestStatus."</td><td>".$response->RequestType."</td><td>".$resquest_room_no."</td></tr>";
+            else if($_POST['from'] == "responses")
+                $content.= "<tr><td>".$response->Date."</td><td>".$resquestname."</td><td>".$response->RequestType."</td><td>".$resquest_room_no."</td></tr>";
+                
                 $i++;
         }
     }

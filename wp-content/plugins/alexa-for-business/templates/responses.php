@@ -5,10 +5,13 @@
         if($_POST['action_for'] == 'search'){
             $startdate =date("d/m/Y", strtotime($_POST['startdate']));
             $enddate = date("d/m/Y", strtotime($_POST['enddate']));
-           
-            $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/scan_response',json_encode(array('startdate'=>$startdate,'enddate'=>$enddate))));
-           $startdate = $_POST['startdate'];
-           $enddate = $_POST['enddate']; 
+          
+            if(!empty($_POST['startdate']) && !empty( $_POST['enddate']))
+                $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/scan_response',json_encode(array('startdate'=>$startdate,'enddate'=>$enddate))));
+            else
+               $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/scan_response',json_encode(array())));
+            $startdate = $_POST['startdate'];
+            $enddate = $_POST['enddate']; 
         }else if($_POST['action_for'] == 'delete_response'){
             $responses=array();
             for($i=0;$i<=count($_POST['no_of_responses']);$i++){
@@ -21,6 +24,8 @@
     else 
     {
         $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/scan_response',json_encode(array())));
+      
+        
     }
     if($attributes['from'] == 'response')
     {
@@ -89,11 +94,18 @@
             $resquest_room_no = $response->RoomNumber;
             
         if($attributes['userid'] == $req_name[0]){
-            
+            $statusprint = true;
             $con_date = $response->Date;
             $date = DateTime::createFromFormat("d/m/Y, H:i:s" , $con_date);
             $new_date = $date->format('m/d/Y, H:i:s');
-          
+            if($attributes['from'] == "audit_log"){
+                if(!empty($response->RequestStatus))
+                     $statusprint = true;
+                else
+                     $statusprint = false;
+            }
+            if( $statusprint == true)
+            {
             print "<tr><td><div class='checkbox checkbox-inline checkbox-styled'><label><input type='checkbox' name='chk_resp".$i."' id='chk_resp".$i."' class='chkall' value='".$response->ResponseID."'><span></span></label></div></td><td>".$new_date."</td><td>".$resquestname."</td>";
             if($attributes['from'] == "audit_log"){
                 print"<td>".$response->RequestStatus."</td>";
@@ -188,7 +200,7 @@
     </td>
                 
                 </tr>";
-                
+            }
                 $i++;
                  //echo $resquestname."<br>";
         }
