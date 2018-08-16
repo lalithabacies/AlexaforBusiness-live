@@ -111,6 +111,25 @@ function get_userid(){
     }
     return $userid;
 }
+
+function get_group_users(){
+
+    $all_users = get_users(array(
+        'meta_key' => 'user_belongs_to',
+        'meta_value'=>get_userid()
+        ));
+    $user_ids = array();
+    if(get_userid()){
+        $user_ids[] = get_userid();
+    }
+    foreach($all_users as $user){
+        if($user->ID>0){
+            $user_ids[] = $user->ID;
+        }
+    }
+    return $user_ids;    
+}
+
 /**
  * Shortcode for create the New User
  * Form has Hotelname and username fields
@@ -269,14 +288,12 @@ function create_room(){
        
         $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_rooms',json_encode(array('RoomName'=>$_REQUEST['RoomName'],'username'=>get_username(),'userid'=>get_userid()))));
         
-        
-        
         $purpose        = "update";
         //$readonly       = "readonly";
         $RoomName    = $data[0]->RoomName;
         $ProfileName = $data[0]->ProfileName;
         $DeviceName  = $data[0]->DeviceName;
-        
+        $SkillGroup  = $data[0]->SkillGroupArn;
         
     }
     $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_rooms',json_encode(array('username'=>get_username()))));
@@ -316,9 +333,9 @@ function create_room(){
     echo '<div class="form-group roomdevices">';
     /*echo '<select class="form-control select2-list js-example-basic-multiple" name="DeviceName[]" id="DeviceName" data-placeholder="Select an item" tabindex="-1"  multiple="multiple" required>';*/
     echo '<select class="form-control" name="DeviceName" id="DeviceName" data-placeholder="Select an item" tabindex="-1">';
-    $params = ($DeviceName)?json_encode(array('DeviceName'=>$DeviceName)):json_encode(array());
+    $params = ($DeviceName)?json_encode(array('DeviceName'=>$DeviceName,'group_users'=>get_group_users())):json_encode(array('group_users'=>get_group_users()));
     $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_devices',$params));
-    $options='';
+    $options='<option value="">Select Device</option>';
     if(!empty($data)){
        
         foreach($data as $device_name){
@@ -326,12 +343,26 @@ function create_room(){
             if(trim($device_name->DeviceName)){
                 $_selected = (trim($DeviceName)==trim($device_name->DeviceName))?"selected":"";
                 $_disabled =in_array(trim($device_name->DeviceName),$associated_device)?($_selected=="selected"?"":"disabled"):"";
-                $options.='<option value="">Select Device</option><option value="'.$device_name->DeviceName.'" '.$_selected.' '.$_disabled.'>'.$device_name->DeviceName.'</option>';
+                $options.='<option value="'.$device_name->DeviceName.'" '.$_selected.' '.$_disabled.'>'.$device_name->DeviceName.'</option>';
             }
         }
     }
     echo $options;
     echo '</select><input type="hidden" name="OldDeviceName" id="OldDeviceName" value="'.$DeviceName.'"><label for="ProfileArn">Devices </label></div>';
+    
+    
+    $params = json_encode(array());
+    $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/skill_groups',$params));
+    echo '<div class="form-group">';
+    echo '<select class="form-control" name="skill_group" id="skill_group"><option value="">Select Skill Group</option>';
+    if(!empty($data)){
+        foreach($data as $skill_arn=>$skill_group){
+            $_sel = ($SkillGroup==$skill_arn)?"selected":"";
+            echo '<option value="'.$skill_arn.'" '.$_sel.'>'.$skill_group.'</option>';
+        }
+    }
+    echo '</select><label for="skill_group">Skill Group</label>';
+    echo'</div>';
     
     echo'<input type="hidden" name="action" value="create_room">
     <input type="hidden" name="purpose" value="'.$purpose.'">
@@ -528,7 +559,7 @@ add_action('admin_post_create_room','create_room_api');
 function create_room_api(){
 
     if($_POST['purpose'] == 'update'){
-        //print_r(json_encode($_POST));die();
+        print_r(json_encode($_POST));die();
         $result = json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/update_rooms',json_encode($_POST)));
     }
     else{
@@ -796,7 +827,8 @@ function doCurl_GET($end_url){
 add_shortcode('list_devices','list_devices_page');
 function list_devices_page(){
     login_check();
-    $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_devices',json_encode(array('user_id'=>get_userid()))));
+
+    $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_devices',json_encode(array('user_id'=>get_userid(),'group_users'=>get_group_users()))));
 
     print'<div class="col-md-10 card card-tiles style-default-light"><form class="form" name="devices_list" method="POST">';
     /*print'<div class="addtoroom">';
@@ -890,7 +922,7 @@ function add_device_room(){
  */ 
 add_shortcode('device_form','device_form_page'); 
 function device_form_page(){
-    $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_devices',json_encode(array('Serial_number'=>$_REQUEST['Serial_number']))));
+    $data=json_decode(doCurl_POST('https://nexter-alexa-for-business.herokuapp.com/a4b/api/v1.0/get_devices',json_encode(array('Serial_number'=>$_REQUEST['Serial_number'],'group_users'=>get_group_users()))));
     if($data){
         foreach($data as $devices){
             print'<div class="col-md-6 card card-tiles style-default-light"><form class="form" name="device_form" action="'.admin_url('admin-post.php').'" method="POST">';

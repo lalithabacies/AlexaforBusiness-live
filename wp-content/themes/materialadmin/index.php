@@ -2,11 +2,7 @@
 get_header();
 global $wpdb;
 
-if(is_user_logged_in()){
-    $dashboard_url = home_url().'/dashboard';
-}else{
-    $dashboard_url = home_url().'/login';
-}
+
 ?>
 
 <!-- BEGIN HEADER-->
@@ -53,7 +49,7 @@ if(is_user_logged_in()){
 			</a>
 			<ul class="dropdown-menu animation-dock">
 			    <li><a href="<?php echo home_url().'/my_profile' ?>">My profile</a></li>
-				<li><a href="<?php echo wp_logout_url('/login') ?>"><i class="fa fa-fw fa-power-off text-danger"></i> Logout</a></li>
+				<li><a href="<?php echo wp_logout_url(home_url().'/login') ?>"><i class="fa fa-fw fa-power-off text-danger"></i> Logout</a></li>
 			</ul>
 		</li>
 	</ul>
@@ -119,7 +115,7 @@ if(is_user_logged_in()){
         </li>-->
         <?php
         $user = wp_get_current_user();
-        if($user->roles[0]=='administrator'){
+        if(($user->roles[0]=='administrator') || ($user->roles[0]=='subscriber')){
         ?>
         <li class="gui-folder">
           <a>
@@ -133,6 +129,9 @@ if(is_user_logged_in()){
         </li>
         <?php
         }
+        
+        //Blocking the Super Adminstrator 
+        if($user->roles[0]!='administrator'){
         ?>
 
         <li>
@@ -174,6 +173,14 @@ if(is_user_logged_in()){
             <li><a href="<?php echo get_home_url().'/notification'?>" ><span class="title">Notification</span></a></li>
           </ul>
         </li>-->
+        
+         <li>
+          <a  class="menubar-toggle" data-toggle="menubar" href="javascript:void(0);">
+         
+		  <div class="gui-icon"><i class="md md-play-circle-fill"></i></div>
+			 <span class="title">Collapse Menu</span>
+          </a>
+        </li>
         
         <li class="gui-folder">
           <a>
@@ -235,7 +242,10 @@ if(is_user_logged_in()){
             <span class="title">Settings</span>
           </a>
         </li>
-
+        <?php
+        }
+        ?>
+       
         <!-- END LEVELS -->
 
       </ul><!--end .main-menu -->
@@ -243,7 +253,7 @@ if(is_user_logged_in()){
 
       <div class="menubar-foot-panel">
         <small class="no-linebreak hidden-folded">
-          <span class="opacity-75">Copyright &copy; 2018</span> <strong>CodeCovers</strong>
+          <span class="opacity-75">Copyright &copy; 2018</span> <strong>Alexa For Business</strong>
         </small>
       </div>
     </div><!--end .menubar-scroll-panel-->
